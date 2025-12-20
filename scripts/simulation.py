@@ -2,10 +2,7 @@ import math
 import random
 import numpy as np
 
-import planner
-import plotting
-import robot
-import environment
+import uav
 
 
 def generate_lawnmower_path(grid_rows, grid_cols, radius=5):
@@ -30,7 +27,7 @@ def generate_lawnmower_path(grid_rows, grid_cols, radius=5):
     resolution = 1.0 * radius
 
     # Plan
-    rx, ry = planner.planning(ox, oy, resolution)
+    rx, ry = uav.planner.planning(ox, oy, resolution)
 
     # Interpolate to create dense path
     dense_path = []
@@ -85,13 +82,13 @@ def generate_lawnmower_path(grid_rows, grid_cols, radius=5):
 def run_simulation_scenario(drift_prob, output_name, title):
     # Setup 100x100 playable -> 102x102 with walls
     ROWS, COLS = 102, 102
-    grid = environment.Grid(ROWS, COLS)
+    grid = uav.environment.Grid(ROWS, COLS)
 
     # Plan
     ideal_path = generate_lawnmower_path(ROWS, COLS)
 
     start_pos = ideal_path[0] # Start at the beginning of the path
-    uav = robot.UAV(start_pos, grid, drift_prob=drift_prob)
+    robot = uav.robot.UAV(start_pos, grid, drift_prob=drift_prob)
 
     # Convert to moves
     moves = []
@@ -112,19 +109,19 @@ def run_simulation_scenario(drift_prob, output_name, title):
     print(f"[{title}] Simulating {len(moves)} steps...")
 
     for dr, dc in moves:
-        current_r, current_c = uav.pos
+        current_r, current_c = robot.pos
         # Open Loop Assumption: We think we are at the ideal previous location?
         # Or we just blindly apply delta to CURRENT position?
         # User prompt: "assuming it is always on track".
         # This implies we apply the PLAN'S relative move to the CURRENT position.
 
         target_r, target_c = current_r + dr, current_c + dc
-        uav.move_towards((target_r, target_c))
+        robot.move_towards((target_r, target_c))
 
-    plotting.plot_results(grid, uav, title, output_name)
+    uav.plotting.plot_results(grid, robot, title, output_name)
 
     valid_cells_count = (ROWS - 2) * (COLS - 2)
-    scanned_count = len(uav.scanned_cells)
+    scanned_count = len(robot.scanned_cells)
     print(f"[{title}] Coverage: {scanned_count}/{valid_cells_count} ({scanned_count/valid_cells_count:.2%}%)")
     return scanned_count == valid_cells_count
 
