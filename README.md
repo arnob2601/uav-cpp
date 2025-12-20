@@ -9,22 +9,20 @@ A project exploring path planning for underwater autonomous vehicles facing drif
 - TODOs:
     - [ ] Add localization action to correct error
     - [ ] Add tests
-    - [ ] Add documentation and project structure
-
+    - [ ] Better abstractions for robot, environment, planner, etc needs to be designed
 
 ## Installation
 The project requires `Python 3` and uses `uv` for dependency management.
 
 Steps:
-1. Clone the repository
+1. Install `uv` if not already installed: guide [here](https://docs.astral.sh/uv/getting-started/installation/).
+2. Clone the repository
 `git clone git@github.com:arnob2601/uav-cpp.git`
-2. Install dependencies
-`uv pip install -r requirements.txt`
 
 
 ## Usage
 Run the simulation
-`uv run simulation.py`
+`uv run scripts/simulation.py`
 
 ### Sample Outputs
 
@@ -32,3 +30,6 @@ Run the simulation
 |--------------|---------------|
 | ![](assets/coverage_no_drift.png) | ![](assets/coverage_with_drift.png) |
 
+
+Run tests:
+`make test`
