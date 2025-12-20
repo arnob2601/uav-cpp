@@ -17,7 +17,7 @@ The project requires `Python 3` and uses `uv` for dependency management.
 
 Steps:
 1. Clone the repository
-`git clone [git@github.com](mailto:git@github.com):arnob2601/uav-cpp.git`
+`git clone git@github.com:arnob2601/uav-cpp.git`
 2. Install dependencies
 `uv pip install -r requirements.txt`
 
