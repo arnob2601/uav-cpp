@@ -13,4 +13,13 @@ requires-python = ">=3.9"
 dependencies = [
     "numpy",
     "matplotlib",
+    "pytest",
+]
+
+[tool.uv.sources]
+mrppddl = { path = "src", editable = true }
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:invalid escape sequence:SyntaxWarning"
 ]
