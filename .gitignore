@@ -1,2 +1,7 @@
-data
-__pycache__
+build/
+__pycache__/
+*.py[oc]
+
+# Resources
+data/
+uv.lock

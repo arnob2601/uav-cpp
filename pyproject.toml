@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uav"
+version = "0.1.0"
+description = "UAV simulation and planning framework"
+authors = [{ name = "Raihan Islam Arnob" }]
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "numpy",
+    "matplotlib",
+]
