@@ -7,9 +7,9 @@ A project exploring path planning for underwater autonomous vehicles facing drif
 - Localization error simulation
 - Coverage visualization
 - TODOs:
-    - [] Add localization action to correct error
-    - [] Add tests
-    - [] Add documentation and project structure
+    - [ ] Add localization action to correct error
+    - [ ] Add tests
+    - [ ] Add documentation and project structure
 
 
 ## Installation
