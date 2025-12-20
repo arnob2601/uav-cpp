@@ -1,6 +1,7 @@
 build/
 __pycache__/
 *.py[oc]
+*.egg-info
 
 # Resources
 data/
