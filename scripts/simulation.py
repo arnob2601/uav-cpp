@@ -62,7 +62,7 @@ def run_simulation_scenario(drift_prob, output_name, title):
     print(f"[{title}] Coverage: {scanned_count}/{valid_cells_count} ({scanned_count / valid_cells_count:.2%}%)")
 
     # Tolerant success check
-    return scanned_count >= (valid_cells_count * 0.95)
+    return scanned_count == (valid_cells_count * 1.0)
 
 
 def run_experiments():
