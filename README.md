@@ -18,6 +18,8 @@ Steps:
 2. Clone the repository
 `git clone git@github.com:arnob2601/uav-cpp.git`
 
+### Windows
+`Chocolatey` first and then using that `GNU Make` need to be installed for windows powershell for running the makefile.
 
 ## Usage
 Run the simulation
