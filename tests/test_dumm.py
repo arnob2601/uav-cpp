@@ -1,4 +1,14 @@
 import pytest
 
-def test_check():
-    assert True
+
+@pytest.mark.parametrize(
+    "a,b,expected",
+    [
+        (1, 1, 2),
+        (2, 3, 5),
+        (-1, 1, 0),
+        (0, 0, 0),
+    ],
+)
+def test_smoke_parametrized(a, b, expected):
+    assert a + b == expected
