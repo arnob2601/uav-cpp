@@ -5,7 +5,11 @@ from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap
 
 
-def plot_results(grid, uav, title, filename):
+def plot_results(grid, path_history, coverage_grid, title, filename):
+    """
+    path_history: list of (x, y) tuples or Pose objects
+    coverage_grid: 2D numpy array where >0 is covered
+    """
     fig, ax = plt.subplots(figsize=(10, 10))
 
     # Create a dense grid for visualization
@@ -22,10 +26,12 @@ def plot_results(grid, uav, title, filename):
             else:
                 vis_grid[r, c] = 0
 
-    # Mark scanned
-    for r, c in uav.scanned_cells:
-        if 0 <= r < grid.rows and 0 <= c < grid.cols:
-            vis_grid[r, c] = 2
+    # Mark scanned from coverage_grid
+    rows, cols = coverage_grid.shape
+    for r in range(rows):
+        for c in range(cols):
+            if coverage_grid[r, c] > 0 and 0 <= r < grid.rows and 0 <= c < grid.cols:
+                vis_grid[r, c] = 2
 
     # Define Colormap
     # 0 -> Black (Wall)
@@ -37,10 +43,19 @@ def plot_results(grid, uav, title, filename):
     ax.imshow(vis_grid, cmap=cmap, origin='upper', extent=[0, grid.cols, grid.rows, 0])
 
     # Plot Trajectory with Gradient
-    py, px = zip(*uav.path_history)
-    # Shift to center of cells
-    px = np.array([x + 0.5 for x in px])
-    py = np.array([y + 0.5 for y in py])
+    # path_history can be tuples or Pose objects
+    px = []
+    py = []
+    for p in path_history:
+        if hasattr(p, 'x'):
+            px.append(p.x + 0.5)
+            py.append(p.y + 0.5)
+        else:
+            px.append(p[0] + 0.5)
+            py.append(p[1] + 0.5)
+            
+    px = np.array(px)
+    py = np.array(py)
 
     # Create segments for LineCollection
     points = np.array([px, py]).T.reshape(-1, 1, 2)
@@ -59,7 +74,7 @@ def plot_results(grid, uav, title, filename):
     ax.plot(px[0], py[0], 'go', markersize=10, label='Start', zorder=10)
 
     valid_cells_count = (grid.rows - 2) * (grid.cols - 2)
-    scanned_count = len(uav.scanned_cells)
+    scanned_count = np.sum(coverage_grid > 0)
     coverage_pct = scanned_count / valid_cells_count * 100
 
     ax.set_title(f"{title}\nCoverage: {scanned_count}/{valid_cells_count} ({coverage_pct:.2f}%)")
