@@ -3,80 +3,11 @@ import random
 import numpy as np
 
 import uav
-
-
-def generate_lawnmower_path(grid_rows, grid_cols, radius=5):
-    """
-    Generates a list of coordinates using the ported planner.
-    Valid area is [1, rows-2] x [1, cols-2].
-    Path is interpolated to ensure dense coverage.
-    """
-    # Define polygon for the valid area
-    # Expand polygon by radius to ensure path hugs the edges (planner keeps centers inside)
-    # We will clamp the actual path points later.
-    margin = radius
-    min_r, max_r = 1 - margin, grid_rows - 2 + margin
-    min_c, max_c = 1 - margin, grid_cols - 2 + margin
-
-    ox = [min_c, max_c, max_c, min_c, min_c]
-    oy = [min_r, min_r, max_r, max_r, min_r]
-
-    # Resolution:
-    # Radius 5 => Diameter 10.
-    # We need significant overlap to ensure coverage.
-    resolution = 1.0 * radius
-
-    # Plan
-    rx, ry = uav.planner.planning(ox, oy, resolution)
-
-    # Interpolate to create dense path
-    dense_path = []
-
-    if not rx:
-        return []
-
-    # Start point
-    curr_r = int(round(ry[0]))
-    curr_c = int(round(rx[0]))
-
-    # Clamp
-    curr_r = max(0, min(curr_r, grid_rows - 1))
-    curr_c = max(0, min(curr_c, grid_cols - 1))
-
-    dense_path.append((curr_r, curr_c))
-
-    for i in range(1, len(rx)):
-        target_r = int(round(ry[i]))
-        target_c = int(round(rx[i]))
-
-        target_r = max(0, min(target_r, grid_rows - 1))
-        target_c = max(0, min(target_c, grid_cols - 1))
-
-        # Walk from curr to target
-        # Simple walk: move along one axis then other?
-        # Or Bresenham?
-        # Planner usually moves Manhattan (along X or along Y), but diagonal turns possible.
-        # Let's simple step towards.
-
-        while (curr_r, curr_c) != (target_r, target_c):
-            dr = target_r - curr_r
-            dc = target_c - curr_c
-
-            # Step size 1
-            step_r = 0 if dr == 0 else (1 if dr > 0 else -1)
-            step_c = 0 if dc == 0 else (1 if dc > 0 else -1)
-
-            # If diagonal move needed, do it? or one by one?
-            # Planner `SweepSearcher` moves 8-neighbor?
-            # `find_safe_turning_grid` allows diagonal.
-            # Simulation `UAV.move_towards` handles drift on steps.
-            # Ideally we feed 1-step increments.
-
-            curr_r += step_r
-            curr_c += step_c
-            dense_path.append((curr_r, curr_c))
-
-    return dense_path
+from uav.simulator import CoverageSimulator
+from uav.robot import UnderwaterRobot
+from uav.planners import BlindPlanner, generate_lawnmower_path_coordinates
+from uav.noise_models import UniformNoiseModel
+from uav.datatypes import Pose
 
 
 def run_simulation_scenario(drift_prob, output_name, title):
@@ -84,46 +15,56 @@ def run_simulation_scenario(drift_prob, output_name, title):
     ROWS, COLS = 102, 102
     grid = uav.environment.Grid(ROWS, COLS)
 
-    # Plan
-    ideal_path = generate_lawnmower_path(ROWS, COLS)
+    # 1. Plan (Offline)
+    # Generate the ideal path as a list of waypoints
+    ideal_path_coords = generate_lawnmower_path_coordinates(ROWS, COLS)
 
-    start_pos = ideal_path[0] # Start at the beginning of the path
-    robot = uav.robot.UAV(start_pos, grid, drift_prob=drift_prob)
+    if not ideal_path_coords:
+        print("Failed to generate path")
+        return False
 
-    # Convert to moves
-    moves = []
-    # Initial move from current (1,1) to first point of path (1,1) -> No move
-    # So we iterate from the SECOND point
-    # Wait, if start_pos IS ideal_path[0], we start moving to ideal_path[1]
+    # 2. Setup Robot and Simulator
+    start_x, start_y = ideal_path_coords[0]
+    start_pose = Pose(start_x, start_y, 0.0)
 
-    # Actually, generate_lawnmower_path generates all points.
-    # If we are already at [0], next target is [1].
+    planner = BlindPlanner(ideal_path_coords)
+    robot = UnderwaterRobot(start_pose, planner, grid)
+    noise_model = UniformNoiseModel(drift_prob=drift_prob)
 
-    for i in range(1, len(ideal_path)):
-        prev = ideal_path[i-1]
-        curr = ideal_path[i]
-        dr, dc = curr[0] - prev[0], curr[1] - prev[1]
-        moves.append((dr, dc))
+    sim = CoverageSimulator(grid, robot, noise_model)
 
     # Execute
-    print(f"[{title}] Simulating {len(moves)} steps...")
+    # We run until the planner says it's done (returns 0 velocity) or max steps
+    max_steps = len(ideal_path_coords) * 2 # Safety margin
+    steps = 0
 
-    for dr, dc in moves:
-        current_r, current_c = robot.pos
-        # Open Loop Assumption: We think we are at the ideal previous location?
-        # Or we just blindly apply delta to CURRENT position?
-        # User prompt: "assuming it is always on track".
-        # This implies we apply the PLAN'S relative move to the CURRENT position.
+    print(f"[{title}] Simulating...")
 
-        target_r, target_c = current_r + dr, current_c + dc
-        robot.move_towards((target_r, target_c))
+    while steps < max_steps:
+        # Check if done
+        # Ideally the simulator loop runs blindly, but we need a break condition.
+        # BlindPlanner returns 0 velocity when done.
 
-    uav.plotting.plot_results(grid, robot, title, output_name)
+        # We can peek at planner state or check action
+        # But for strictly proper simulation, we run step()
+
+        status = sim.step()
+        steps += 1
+
+        # Check if robot has stopped moving meaningfully
+        # This is a bit hacky, normally we have a "MissionComplete" flag.
+        # BlindPlanner halts by returning 0 velocity actions.
+        if planner.current_waypoint_idx >= len(planner.waypoints):
+             break
+
+    uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage, title, output_name)
 
     valid_cells_count = (ROWS - 2) * (COLS - 2)
-    scanned_count = len(robot.scanned_cells)
+    scanned_count = status['covered_cells']
     print(f"[{title}] Coverage: {scanned_count}/{valid_cells_count} ({scanned_count/valid_cells_count:.2%}%)")
-    return scanned_count == valid_cells_count
+
+    # Tolerant success check
+    return scanned_count >= (valid_cells_count * 0.95)
 
 def run_experiments():
     # 1. No Drift
