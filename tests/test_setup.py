@@ -10,5 +10,5 @@ import pytest
         (0, 0, 0),
     ],
 )
-def test_smoke_parametrized(a, b, expected):
+def test_parametrized(a, b, expected):
     assert a + b == expected
