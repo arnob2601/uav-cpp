@@ -8,7 +8,6 @@ A project exploring path planning for underwater autonomous vehicles facing drif
 - Coverage visualization
 - TODOs:
     - [ ] Add localization action to correct error
-    - [ ] The simulator step is independent of robot action, this needs to be fixed
     - [ ] Test on Linux
 
 ## Installation
