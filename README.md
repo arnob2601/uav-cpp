@@ -8,8 +8,8 @@ A project exploring path planning for underwater autonomous vehicles facing drif
 - Coverage visualization
 - TODOs:
     - [ ] Add localization action to correct error
-    - [ ] Add tests
-    - [ ] Better abstractions for robot, environment, planner, etc needs to be designed
+    - [ ] The simulator step is independent of robot action, this needs to be fixed
+    - [ ] Test on Linux
 
 ## Installation
 The project requires `Python 3` and uses `uv` for dependency management.
