@@ -13,6 +13,7 @@ class CoverageSimulator:
         # Ground Truths
         self.true_pose = robot.belief_pose  # Start synced
         self.true_map_coverage = np.zeros((env_grid.rows, env_grid.cols))
+        self._update_coverage(self.true_pose)  # Mark initial position as covered
         self.history = [self.true_pose]
 
     def step(self):
