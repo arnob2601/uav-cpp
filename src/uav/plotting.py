@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap
@@ -53,7 +52,7 @@ def plot_results(grid, path_history, coverage_grid, title, filename):
         else:
             px.append(p[0] + 0.5)
             py.append(p[1] + 0.5)
-            
+
     px = np.array(px)
     py = np.array(py)
 
@@ -86,7 +85,7 @@ def plot_results(grid, path_history, coverage_grid, title, filename):
     unscanned = []
     for r in range(grid.rows):
         for c in range(grid.cols):
-            if vis_grid[r, c] == 1: # Unexplored
+            if vis_grid[r, c] == 1:  # Unexplored
                 unscanned.append((r, c))
 
     if unscanned:
