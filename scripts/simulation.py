@@ -1,6 +1,4 @@
-import math
 import random
-import numpy as np
 
 import uav
 from uav.simulator import CoverageSimulator
@@ -35,7 +33,7 @@ def run_simulation_scenario(drift_prob, output_name, title):
 
     # Execute
     # We run until the planner says it's done (returns 0 velocity) or max steps
-    max_steps = len(ideal_path_coords) * 2 # Safety margin
+    max_steps = len(ideal_path_coords) * 2  # Safety margin
     steps = 0
 
     print(f"[{title}] Simulating...")
@@ -55,16 +53,17 @@ def run_simulation_scenario(drift_prob, output_name, title):
         # This is a bit hacky, normally we have a "MissionComplete" flag.
         # BlindPlanner halts by returning 0 velocity actions.
         if planner.current_waypoint_idx >= len(planner.waypoints):
-             break
+            break
 
     uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage, title, output_name)
 
     valid_cells_count = (ROWS - 2) * (COLS - 2)
     scanned_count = status['covered_cells']
-    print(f"[{title}] Coverage: {scanned_count}/{valid_cells_count} ({scanned_count/valid_cells_count:.2%}%)")
+    print(f"[{title}] Coverage: {scanned_count}/{valid_cells_count} ({scanned_count / valid_cells_count:.2%}%)")
 
     # Tolerant success check
     return scanned_count >= (valid_cells_count * 0.95)
+
 
 def run_experiments():
     # 1. No Drift
@@ -78,6 +77,7 @@ def run_experiments():
     print("\nSummary:")
     print(f"No Drift Ideal: {'Pass' if perfect else 'FAIL'}")
     print(f"Drift Impact: {'Holes Detected' if not drifted_perfect else 'Unexpected Perfect Coverage'}")
+
 
 if __name__ == "__main__":
     random.seed(42)
