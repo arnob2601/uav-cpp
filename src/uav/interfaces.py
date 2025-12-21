@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 from .datatypes import Pose, Action, RobotState
+
 
 class NoiseModel(ABC):
     """Abstract base for drift and error models"""
@@ -14,9 +14,9 @@ class NoiseModel(ABC):
         """Calculates where the robot THINKS it went (Dead Reckoning)"""
         pass
 
+
 class BasePlanner(ABC):
     """Abstract base for all planning strategies"""
-    
     def __init__(self):
         self.plan_queue = []
 

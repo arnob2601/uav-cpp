@@ -1,5 +1,6 @@
 import math
 
+
 class Grid:
     def __init__(self, rows, cols):
         # rows, cols include the walls.

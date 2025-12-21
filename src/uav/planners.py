@@ -1,7 +1,8 @@
 from .interfaces import BasePlanner
-from .datatypes import RobotState, Action, ActionType, Pose
+from .datatypes import RobotState, Action, ActionType
 import numpy as np
-import uav.planner # For the legacy planning utils
+import uav.planner  # For the legacy planning utils
+
 
 class BlindPlanner(BasePlanner):
     """
@@ -12,9 +13,9 @@ class BlindPlanner(BasePlanner):
         waypoints: list of (x, y) tuples or Pose objects
         """
         super().__init__()
-        self.waypoints = list(waypoints) # Queue of waypoints (x, y)
+        self.waypoints = list(waypoints)  # Queue of waypoints (x, y)
         self.current_waypoint_idx = 0
-        self.arrival_threshold = 1.0 # Distance to consider waypoint reached
+        self.arrival_threshold = 1.0  # Distance to consider waypoint reached
 
     def get_next_action(self, belief_state: RobotState) -> Action:
         if self.current_waypoint_idx >= len(self.waypoints):
@@ -36,7 +37,7 @@ class BlindPlanner(BasePlanner):
             # Reached, move to next
             self.current_waypoint_idx += 1
             if self.current_waypoint_idx >= len(self.waypoints):
-                 return Action(type=ActionType.MOVE, vx=0.0, vy=0.0, dt=1.0)
+                return Action(type=ActionType.MOVE, vx=0.0, vy=0.0, dt=1.0)
             target = self.waypoints[self.current_waypoint_idx]
             target_x, target_y = target[0], target[1]
             dx = target_x - curr_x
@@ -45,12 +46,13 @@ class BlindPlanner(BasePlanner):
 
         # Normalize velocity (unit step per dt=1)
         if dist > 0:
-            vx = (dx / dist) # * speed
+            vx = (dx / dist)  # * speed
             vy = (dy / dist)
         else:
             vx, vy = 0.0, 0.0
 
         return Action(type=ActionType.MOVE, vx=vx, vy=vy, dt=1.0)
+
 
 class IntervalPlanner(BlindPlanner):
     """
@@ -65,9 +67,10 @@ class IntervalPlanner(BlindPlanner):
         self.step_counter += 1
 
         if self.step_counter % self.resurface_interval == 0:
-            return Action(type=ActionType.RESURFACE, dt=5.0) # Assume resurfacing takes fixed dt time
+            return Action(type=ActionType.RESURFACE, dt=5.0)  # Assume resurfacing takes fixed dt time
 
         return super().get_next_action(belief_state)
+
 
 def generate_lawnmower_path_coordinates(grid_rows, grid_cols, radius=5):
     """
@@ -98,7 +101,7 @@ def generate_lawnmower_path_coordinates(grid_rows, grid_cols, radius=5):
     curr_r = max(0, min(curr_r, grid_rows - 1))
     curr_c = max(0, min(curr_c, grid_cols - 1))
 
-    dense_path.append((curr_c, curr_r)) # Store as x, y
+    dense_path.append((curr_c, curr_r))  # Store as x, y
 
     for i in range(1, len(rx)):
         target_r = int(round(ry[i]))
@@ -117,6 +120,6 @@ def generate_lawnmower_path_coordinates(grid_rows, grid_cols, radius=5):
 
             curr_r += step_r
             curr_c += step_c
-            dense_path.append((curr_c, curr_r)) # x, y
+            dense_path.append((curr_c, curr_r))  # x, y
 
     return dense_path

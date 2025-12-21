@@ -7,6 +7,7 @@ import math
 from enum import IntEnum
 import numpy as np
 
+
 # --- Utils ---
 def rot_mat_2d(angle):
     """
@@ -15,6 +16,7 @@ def rot_mat_2d(angle):
     c = math.cos(angle)
     s = math.sin(angle)
     return np.array([[c, -s], [s, c]])
+
 
 class FloatGrid:
     def __init__(self, init_val=0.0):
@@ -32,11 +34,12 @@ class FloatGrid:
         if not isinstance(other, FloatGrid):
             return NotImplemented
         return self.get_float_data() < other.get_float_data()
-    
+
     def __ge__(self, other):
         if not isinstance(other, FloatGrid):
             return NotImplemented
         return self.get_float_data() >= other.get_float_data()
+
 
 # --- Grid Map ---
 class GridMap:
@@ -119,7 +122,7 @@ class GridMap:
             if (y[i1] + tmp1 * (iox - x[i1]) - ioy) > 0.0:
                 inside = not inside
         return inside
-    
+
     def expand_grid(self, occupied_val=FloatGrid(1.0)):
         x_inds, y_inds, values = [], [], []
 
@@ -188,7 +191,7 @@ class SweepSearcher:
             return n_x_index, n_y_index
         else:
             next_c_x_index, next_c_y_index = self.find_safe_turning_grid(c_x_index, c_y_index, grid_map)
-            
+
             if (next_c_x_index is None) and (next_c_y_index is None):
                 # moving backward
                 next_c_x_index = -self.moving_direction + c_x_index
@@ -221,6 +224,7 @@ class SweepSearcher:
             return max(x_inds), y_ind
         raise ValueError("self.moving direction is invalid ")
 
+
 def search_free_grid_index_at_edge_y(grid_map, from_upper=False):
     y_index = None
     x_indexes = []
@@ -241,6 +245,7 @@ def search_free_grid_index_at_edge_y(grid_map, from_upper=False):
             break
     return x_indexes, y_index
 
+
 def find_sweep_direction_and_start_position(ox, oy):
     max_dist = 0.0
     vec = [0.0, 0.0]
@@ -255,6 +260,7 @@ def find_sweep_direction_and_start_position(ox, oy):
             sweep_start_pos = [ox[i], oy[i]]
     return vec, sweep_start_pos
 
+
 def convert_grid_coordinate(ox, oy, sweep_vec, sweep_start_position):
     tx = [ix - sweep_start_position[0] for ix in ox]
     ty = [iy - sweep_start_position[1] for iy in oy]
@@ -262,12 +268,14 @@ def convert_grid_coordinate(ox, oy, sweep_vec, sweep_start_position):
     converted_xy = np.stack([tx, ty]).T @ rot_mat_2d(th)
     return converted_xy[:, 0], converted_xy[:, 1]
 
+
 def convert_global_coordinate(x, y, sweep_vec, sweep_start_position):
     th = math.atan2(sweep_vec[1], sweep_vec[0])
     converted_xy = np.stack([x, y]).T @ rot_mat_2d(-th)
     rx = [ix + sweep_start_position[0] for ix in converted_xy[:, 0]]
     ry = [iy + sweep_start_position[1] for iy in converted_xy[:, 1]]
     return rx, ry
+
 
 def setup_grid_map(ox, oy, resolution, sweep_direction, offset_grid=10):
     width = math.ceil((max(ox) - min(ox)) / resolution) + offset_grid
@@ -287,6 +295,7 @@ def setup_grid_map(ox, oy, resolution, sweep_direction, offset_grid=10):
         x_inds_goal_y, goal_y = search_free_grid_index_at_edge_y(grid_map, from_upper=False)
 
     return grid_map, x_inds_goal_y, goal_y
+
 
 def sweep_path_search(sweep_searcher, grid_map):
     c_x_index, c_y_index = sweep_searcher.search_start_grid(grid_map)
@@ -309,6 +318,7 @@ def sweep_path_search(sweep_searcher, grid_map):
         grid_map.set_value_from_xy_index(c_x_index, c_y_index, FloatGrid(0.5))
 
     return px, py
+
 
 def planning(ox, oy, resolution,
              moving_direction=SweepSearcher.MovingDirection.RIGHT,

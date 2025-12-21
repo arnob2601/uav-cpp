@@ -2,6 +2,7 @@ import numpy as np
 from .datatypes import Pose, Action, ActionType, RobotState
 from .interfaces import BasePlanner
 
+
 class UnderwaterRobot:
     def __init__(self, start_pose: Pose, planner: BasePlanner, env):
         self.planner = planner
@@ -9,9 +10,9 @@ class UnderwaterRobot:
         # Belief State (Where robot thinks it is)
         self.belief_pose = start_pose
         # 0=Unexplored, 1=Free, 2=Obstacle. Initialize with 0.
-        self.perceived_map = np.zeros((env.rows, env.cols)) 
+        self.perceived_map = np.zeros((env.rows, env.cols))
         self.accumulated_error = 0.0
-        
+
         # Mark initial position as covered/free
         self._mark_coverage(self.belief_pose)
 
@@ -52,11 +53,11 @@ class UnderwaterRobot:
             # Let's assume global frame velocities for now or robot frame?
             # "vx: float = 0.0" in Action.
             # Let's assume simplistically these are delta x, delta y for the grid if dt=1
-            
+
             new_x = pose.x + action.vx * action.dt
             new_y = pose.y + action.vy * action.dt
-            new_theta = pose.theta # No rotation yet
-            
+            new_theta = pose.theta  # No rotation yet
+
             return Pose(new_x, new_y, new_theta)
         return pose
 
@@ -67,7 +68,7 @@ class UnderwaterRobot:
         # Map indices
         r = int(round(pose.y))
         c = int(round(pose.x))
-        
+
         # Simulate sensor radius = 3
         neighbors = self.env.get_neighbors(r, c, radius=3)
         rows, cols = self.perceived_map.shape
@@ -83,11 +84,11 @@ class UnderwaterRobot:
         """
         # If truth_patch is same shape and contains all info:
         if truth_patch.shape == internal_map.shape:
-             # Logic: if truth_patch says "Obstacle" (2) or "Free" (1), trust it.
-             # If truth_patch is 0 (Unexplored), keep our belief?
-             # Or is truth_patch ONLY what was seen?
-             
-             # Assuming truth_patch overrides:
-             return np.where(truth_patch != 0, truth_patch, internal_map)
-        
+            # Logic: if truth_patch says "Obstacle" (2) or "Free" (1), trust it.
+            # If truth_patch is 0 (Unexplored), keep our belief?
+            # Or is truth_patch ONLY what was seen?
+
+            # Assuming truth_patch overrides:
+            return np.where(truth_patch != 0, truth_patch, internal_map)
+
         return internal_map
