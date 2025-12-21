@@ -64,7 +64,7 @@ def plot_results(grid, path_history, coverage_grid, title, filename):
     norm = plt.Normalize(0, len(px))
     lc = LineCollection(segments, cmap='viridis', norm=norm)
     lc.set_array(np.arange(len(px)))
-    lc.set_linewidth(3) # 3x thicker
+    lc.set_linewidth(3)  # 3x thicker
 
     ax.add_collection(lc)
 

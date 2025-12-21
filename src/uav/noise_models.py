@@ -2,10 +2,11 @@ from .interfaces import NoiseModel
 from .datatypes import Pose, Action
 import random
 
+
 class UniformNoiseModel(NoiseModel):
     def __init__(self, drift_prob=0.1):
         self.drift_prob = drift_prob
-        
+
     def apply_drift(self, true_pose: Pose, action: Action) -> Pose:
         """
         Applies random drift to the movement.
@@ -14,7 +15,7 @@ class UniformNoiseModel(NoiseModel):
         new_x = true_pose.x + action.vx * action.dt
         new_y = true_pose.y + action.vy * action.dt
         new_theta = true_pose.theta
-        
+
         # Apply drift
         # Example: 10% chance to drift 1 unit in a random direction
         if random.random() < self.drift_prob:
@@ -23,7 +24,7 @@ class UniformNoiseModel(NoiseModel):
             dy = random.choice([-1, 0, 1])
             new_x += dx
             new_y += dy
-            
+
         return Pose(new_x, new_y, new_theta)
 
     def predict_motion(self, belief_pose: Pose, action: Action) -> Pose:

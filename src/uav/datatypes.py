@@ -2,15 +2,18 @@ from dataclasses import dataclass
 from enum import Enum, auto
 import numpy as np
 
+
 class ActionType(Enum):
     MOVE = auto()
     RESURFACE = auto()
+
 
 @dataclass
 class Pose:
     x: float
     y: float
     theta: float = 0.0
+
 
 @dataclass
 class Action:
@@ -21,14 +24,15 @@ class Action:
     vx: float = 0.0
     vy: float = 0.0
     # Duration of action
-    dt: float = 1.0 
-    
+    dt: float = 1.0
+
     # Optional: absolute target for higher level planners that don't do velocity control yet
-    target_pose: 'Pose' = None 
+    target_pose: 'Pose' = None
+
 
 @dataclass
 class RobotState:
     """The Robot's internal belief"""
     pose: Pose
-    uncertainty_covariance: np.ndarray = None # Optional for now
+    uncertainty_covariance: np.ndarray = None  # Optional for now
     perceived_occupancy_grid: np.ndarray = None
