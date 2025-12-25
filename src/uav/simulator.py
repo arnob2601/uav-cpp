@@ -53,6 +53,7 @@ class CoverageSimulator:
                 'true_pose': self.true_pose,
                 'true_map_patch': self.true_map_coverage.copy()  # Simplification: gives entire truth of what's covered
             }
+            self.noise_model.drift_prob = 0.0  # Reset localization noise/drift probability after resurfacing
 
         # 3. Robot updates its belief (Dead Reckoning or Reset)
         self.robot.update_internal_state(action, observation)
