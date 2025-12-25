@@ -33,7 +33,7 @@ class UnderwaterRobot:
             self.belief_pose = observation['true_pose']
             # Merge true map data into perceived map
             if 'true_map_patch' in observation:
-                self.perceived_map = self._merge_maps(self.perceived_map, observation['true_map_patch'])
+                self.perceived_map = observation['true_map_patch']
         else:
             # DEAD RECKONING (Drift accumulates here because we don't know it)
             self.belief_pose = self._apply_kinematics(self.belief_pose, action)
@@ -70,25 +70,8 @@ class UnderwaterRobot:
         c = int(round(pose.x))
 
         # Simulate sensor radius = 3
-        neighbors = self.env.get_neighbors(r, c, radius=3)
+        neighbors = self.env.get_neighbors(r, c, radius=2)
         rows, cols = self.perceived_map.shape
         for nr, nc in neighbors:
             if 0 <= nr < rows and 0 <= nc < cols:
                 self.perceived_map[nr, nc] = 1.0
-
-    def _merge_maps(self, internal_map, truth_patch):
-        """
-        Merge truth_patch into internal_map.
-        For simplicity, overwrite internal with truth where truth is known/provided.
-        If truth_patch is the whole map, just replace.
-        """
-        # If truth_patch is same shape and contains all info:
-        if truth_patch.shape == internal_map.shape:
-            # Logic: if truth_patch says "Obstacle" (2) or "Free" (1), trust it.
-            # If truth_patch is 0 (Unexplored), keep our belief?
-            # Or is truth_patch ONLY what was seen?
-
-            # Assuming truth_patch overrides:
-            return np.where(truth_patch != 0, truth_patch, internal_map)
-
-        return internal_map
