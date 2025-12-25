@@ -54,22 +54,56 @@ class BlindPlanner(BasePlanner):
         return Action(type=ActionType.MOVE, vx=vx, vy=vy, dt=1.0)
 
 
-class IntervalPlanner(BlindPlanner):
+class ResurfacingPlanner(BlindPlanner):
     """
-    Resurfaces every N steps.
+    Resurfaces every N steps and plans for remaining area.
     """
-    def __init__(self, waypoints, resurface_interval=50):
-        super().__init__(waypoints)
+    def __init__(self, policy, start_pose, grid_config, resurface_interval=50):
+        super().__init__([])  # Start with empty waypoints, will plan on first step/update
+        self.policy = policy
+        self.grid_config = grid_config
         self.resurface_interval = resurface_interval
         self.step_counter = 0
+        self.state = "NAVIGATING" # NAVIGATING, RESURFACING
+        self.initial_planning_done = False
 
     def get_next_action(self, belief_state: RobotState) -> Action:
+        # Initial plan
+        if not self.initial_planning_done:
+            self._replan(belief_state)
+            self.initial_planning_done = True
+
         self.step_counter += 1
 
         if self.step_counter % self.resurface_interval == 0:
-            return Action(type=ActionType.RESURFACE, dt=5.0)  # Assume resurfacing takes fixed dt time
+            self.state = "RESURFACING"
+            return Action(type=ActionType.RESURFACE, dt=5.0)
+
+        # If we just finished resurfacing, we might need to know?
+        # Actually the robot just teleports and gives us a new map/pose via update_internal_state
+        # But get_next_action is called AFTER update_internal_state.
+
+        # We need a way to detect "Just Resurfaced".
+        # We can track it via state flag.
+        if self.state == "RESURFACING":
+            # We just came back from resurface
+            self.state = "NAVIGATING"
+            self._replan(belief_state)
 
         return super().get_next_action(belief_state)
+
+    def _replan(self, belief_state: RobotState):
+        """
+        Uses policy to generate new waypoints based on current belief.
+        """
+        new_waypoints = self.policy.plan(
+            belief_state.pose,
+            belief_state.perceived_occupancy_grid,
+            self.grid_config
+        )
+        # Reset BlindPlanner queue
+        self.waypoints = list(new_waypoints)
+        self.current_waypoint_idx = 0
 
 
 def generate_lawnmower_path_coordinates(grid_rows, grid_cols, radius=5):
