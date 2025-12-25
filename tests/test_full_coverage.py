@@ -13,7 +13,7 @@ def test_blind_planner_full_coverage_no_drift():
     grid = uav.environment.Grid(ROWS, COLS)
 
     # 1. Generate full lawnmower path
-    path_coords = generate_lawnmower_path_coordinates(ROWS, COLS, radius=5)
+    path_coords = generate_lawnmower_path_coordinates(ROWS, COLS, radius=4)
     assert len(path_coords) > 0, "Path generation failed"
 
     start_x, start_y = path_coords[0]
