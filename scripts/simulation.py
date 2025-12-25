@@ -8,7 +8,7 @@ from uav.noise_models import UniformNoiseModel
 from uav.datatypes import Pose
 
 
-def run_simulation_scenario(drift_prob, output_name, title):
+def run_simulation_scenario(drift_prob, delta_prob, output_name, title):
     # Setup 100x100 playable -> 102x102 with walls
     ROWS, COLS = 102, 102
     grid = uav.environment.Grid(ROWS, COLS)
@@ -27,7 +27,7 @@ def run_simulation_scenario(drift_prob, output_name, title):
 
     planner = BlindPlanner(ideal_path_coords)
     robot = UnderwaterRobot(start_pose, planner, grid)
-    noise_model = UniformNoiseModel(drift_prob=drift_prob)
+    noise_model = UniformNoiseModel(drift_prob=drift_prob, delta_prob=delta_prob)
 
     sim = CoverageSimulator(grid, robot, noise_model)
 
@@ -68,11 +68,11 @@ def run_simulation_scenario(drift_prob, output_name, title):
 def run_experiments():
     # 1. No Drift
     print("Running Baseline (No Drift)...")
-    perfect = run_simulation_scenario(0.0, 'coverage_no_drift.png', 'No Drift')
+    perfect = run_simulation_scenario(0.0, 0.0, 'coverage_no_drift.png', 'No Drift')
 
     # 2. With Drift
     print("\nRunning Experiment (With Drift)...")
-    drifted_perfect = run_simulation_scenario(0.1, 'coverage_with_drift.png', 'With Drift (p=0.1)')
+    drifted_perfect = run_simulation_scenario(0.0, 0.0001, 'coverage_with_drift.png', 'With Drift (p+=0.0001)')
 
     print("\nSummary:")
     print(f"No Drift Ideal: {'Pass' if perfect else 'FAIL'}")
