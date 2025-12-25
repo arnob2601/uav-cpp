@@ -4,8 +4,9 @@ import random
 
 
 class UniformNoiseModel(NoiseModel):
-    def __init__(self, drift_prob=0.1):
+    def __init__(self, drift_prob=0.0, delta_prob=0.0):
         self.drift_prob = drift_prob
+        self.delta_prob = delta_prob
 
     def apply_drift(self, true_pose: Pose, action: Action) -> Pose:
         """
@@ -24,6 +25,9 @@ class UniformNoiseModel(NoiseModel):
             dy = random.choice([-1, 0, 1])
             new_x += dx
             new_y += dy
+
+        # Increase drift probability for next time
+        self.drift_prob = min(1.0, self.drift_prob + self.delta_prob)
 
         return Pose(new_x, new_y, new_theta)
 
