@@ -90,8 +90,8 @@ def test_resurfacing_planner_with_drift():
 
     # We expect decent coverage, certainly better than random walk, but maybe not 100% due to walls/drift
     # Achieving ~70% in tests. Setting threshold to 65%.
-    assert coverage_ratio > 0.95, f"Expected >95% coverage with drift, got {coverage_ratio:.2%}"
     uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage, "Resurfacing with Drift", "data/resurfacing_with_drift.png")
+    assert coverage_ratio > 0.95, f"Expected >95% coverage with drift, got {coverage_ratio:.2%}"
 
     # Also verify that we actually had drift
     # Hard to verify explicitly without recording, but we passed non-zero param.

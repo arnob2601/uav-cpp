@@ -68,7 +68,8 @@ def test_blind_planner_full_coverage_no_drift():
 
     # Allow small margin of error due to discretization or edge cases,
     # but "No Drift" + "Full Path" should be very close to 100%.
-    assert coverage_ratio == 1.0, f"Expected 100% coverage, got {coverage_ratio:.2%}"
     # plot the coverage
     uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage,
                               "Blind Planner Full Coverage No Drift", "data/full_coverage_no_drift.png")
+
+    assert coverage_ratio == 1.0, f"Expected 100% coverage, got {coverage_ratio:.2%}"
