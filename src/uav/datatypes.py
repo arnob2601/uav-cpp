@@ -34,5 +34,5 @@ class Action:
 class RobotState:
     """The Robot's internal belief"""
     pose: Pose
-    uncertainty_covariance: np.ndarray = None  # Optional for now
+    sigma: np.ndarray = None  # 2x2 covariance matrix
     perceived_occupancy_grid: np.ndarray = None

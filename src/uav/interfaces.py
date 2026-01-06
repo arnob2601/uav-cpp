@@ -14,6 +14,11 @@ class NoiseModel(ABC):
         """Calculates where the robot THINKS it went (Dead Reckoning)"""
         pass
 
+    def clone(self):
+        """Returns a deep copy of the noise model state."""
+        import copy
+        return copy.deepcopy(self)
+
 
 class BasePlanner(ABC):
     """Abstract base for all planning strategies"""
@@ -27,3 +32,8 @@ class BasePlanner(ABC):
         Decides the next action based on the robot's belief state.
         """
         pass
+
+    def clone(self):
+        """Returns a deep copy of the planner state."""
+        import copy
+        return copy.deepcopy(self)

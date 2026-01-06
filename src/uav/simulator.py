@@ -84,3 +84,35 @@ class CoverageSimulator:
             "covered_cells": covered,
             "true_pose": self.true_pose
         }
+
+    def clone(self):
+        """
+        Create a deep copy of the simulation for branching.
+        """
+        # 1. Clone Robot (which has its own belief state)
+        new_robot = self.robot.clone()
+        
+        # 2. Clone Simulator State
+        # env is shared (read-only grid)
+        # noise_model should be cloned if it has state (it does)
+        new_noise = self.noise_model.clone()
+        
+        # Re-link robot and noise model if necessary?
+        # The robot has a reference to noise_model. 
+        # But in robot.clone(), we cloned the noise model attached to the robot.
+        # Here we have self.noise_model separately?
+        # In __init__, we passed noise_model to robot.
+        # If we want them to remain consistent (same instance), we should synchronize.
+        
+        # Let's ensure new_robot uses the SAME instance of new_noise
+        new_robot.noise_model = new_noise
+        
+        new_sim = CoverageSimulator(self.env, new_robot, new_noise)
+        
+        # 3. Copy Ground Truths
+        import copy
+        new_sim.true_pose = copy.deepcopy(self.true_pose)
+        new_sim.true_map_coverage = self.true_map_coverage.copy()
+        new_sim.history = copy.deepcopy(self.history)
+        
+        return new_sim
