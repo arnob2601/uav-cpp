@@ -116,7 +116,7 @@ class UnderwaterRobot:
         c = int(round(pose.x))
 
         # Simulate sensor radius = 3
-        neighbors = self.env.get_neighbors(r, c, radius=2)
+        neighbors = self.env.get_neighbors(r, c)
         rows, cols = self.perceived_map.shape
         for nr, nc in neighbors:
             if 0 <= nr < rows and 0 <= nc < cols:
