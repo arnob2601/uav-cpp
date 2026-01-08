@@ -332,7 +332,7 @@ def planning(ox, oy, resolution,
     return list(rx), list(ry)
 
 
-def plan_coverage_tsp(belief_map, grid_config, start_pose, radius=3):
+def plan_coverage_tsp(belief_map, start_pose, radius=3):
     """
     Plans a path to cover all unvisited areas in the belief map.
 
@@ -342,15 +342,13 @@ def plan_coverage_tsp(belief_map, grid_config, start_pose, radius=3):
 
     Args:
         belief_map: 2D numpy array (0=Unvisited, 1=Visited)
-        grid_config: Dict {'rows': int, 'cols': int}
         start_pose: Pose object or tuple (x, y)
         radius: Sweep radius/margin
 
     Returns:
         List of (x, y) tuples representing the path.
     """
-    rows = grid_config['rows']
-    cols = grid_config['cols']
+    rows, cols = belief_map.shape
     unvisited_mask = (belief_map == 0)
 
     # Filter out walls (assuming 1-cell border)
@@ -381,12 +379,12 @@ def plan_coverage_tsp(belief_map, grid_config, start_pose, radius=3):
         min_c, max_c = np.min(c_indices), np.max(c_indices)
 
         # Centroid
-        centroid = (np.mean(c_indices), np.mean(r_indices)) # x, y
+        centroid = (np.mean(c_indices), np.mean(r_indices))  # x, y
         cluster_centroids.append(centroid)
 
         # Generate sweep path for box
         # We call the existing 'planning' function (sweep_path_search wrapper)
-        local_path = _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, rows, cols, radius)
+        local_path = _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, rows, cols, radius, belief_map)
 
         # Fallback for single points or very small clusters
         if not local_path:
@@ -412,9 +410,11 @@ def plan_coverage_tsp(belief_map, grid_config, start_pose, radius=3):
 
         # Find nearest cluster start or centroid
         for idx in remaining_indices:
-            # Distance to centroid is a good approximation
-            centroid = cluster_centroids[idx]
-            dist = np.hypot(centroid[0] - curr_x, centroid[1] - curr_y)
+            # Check deviation from start of path if available
+            path = cluster_paths[idx]
+            target_pt = path[0] if path else cluster_centroids[idx]
+
+            dist = np.hypot(target_pt[0] - curr_x, target_pt[1] - curr_y)
             if dist < min_dist:
                 min_dist = dist
                 best_idx = idx
@@ -461,7 +461,7 @@ def _cluster_unvisited(mask, rows, cols):
     return labeled_map, label_counter
 
 
-def _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, all_rows, all_cols, radius):
+def _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, all_rows, all_cols, radius, belief_map=None):
     margin = radius
     p_min_r = max(0, min_r - margin)
     p_max_r = min(all_rows - 1, max_r + margin)
@@ -486,6 +486,16 @@ def _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, all_rows, all_cols, 
     for x, y in zip(rx, ry):
         cx = max(0, min(x, all_cols - 1))
         cy = max(0, min(y, all_rows - 1))
-        path.append((cx, cy))
+
+        # Filter: only add if point is unvisited in belief_map
+        if belief_map is not None:
+            # Check vicinity or just the point?
+            # Just the point is safest to avoid skipping valid areas,
+            # but might leave small gaps if resolution is coarse.
+            # Given replanning, checking the point is good.
+            if belief_map[int(cy), int(cx)] == 0:
+                path.append((cx, cy))
+        else:
+            path.append((cx, cy))
 
     return path

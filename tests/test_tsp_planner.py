@@ -14,9 +14,9 @@ class TestTSPPlanner:
         belief_map[3:6, 3:6] = 0
 
         start_pose = Pose(0, 0, 0)
-        grid_config = {'rows': rows, 'cols': cols}
+        
 
-        path = planner.plan_coverage_tsp(belief_map, grid_config, start_pose, radius=1)
+        path = planner.plan_coverage_tsp(belief_map, start_pose, radius=1)
 
         assert len(path) > 0, "Should generate path for unvisited block"
 
@@ -25,7 +25,7 @@ class TestTSPPlanner:
             assert 0 <= x < cols
             assert 0 <= y < rows
 
-    def test_clustering_two_disjoint_blocks(self):
+    def test_clustering_separated_blocks(self):
         """Test clustering with two separated blocks"""
         rows, cols = 20, 20
         belief_map = np.ones((rows, cols))
@@ -37,9 +37,9 @@ class TestTSPPlanner:
         belief_map[15:18, 15:18] = 0
 
         start_pose = Pose(0, 0, 0)
-        grid_config = {'rows': rows, 'cols': cols}
+        
 
-        path = planner.plan_coverage_tsp(belief_map, grid_config, start_pose, radius=1)
+        path = planner.plan_coverage_tsp(belief_map, start_pose, radius=1)
 
         assert len(path) > 0
 
@@ -60,7 +60,7 @@ class TestTSPPlanner:
         assert visited_b1, "Should visit Block 1"
         assert visited_b2, "Should visit Block 2"
 
-    def test_walls_ignored(self):
+    def test_wall_handling(self):
         """Test that unvisited walls are ignored"""
         rows, cols = 10, 10
         belief_map = np.ones((rows, cols))
@@ -72,9 +72,9 @@ class TestTSPPlanner:
         belief_map[:, cols-1] = 0
 
         start_pose = Pose(5, 5, 0)
-        grid_config = {'rows': rows, 'cols': cols}
+        
 
-        path = planner.plan_coverage_tsp(belief_map, grid_config, start_pose, radius=1)
+        path = planner.plan_coverage_tsp(belief_map, start_pose, radius=1)
 
         # Should be empty as only walls are 0
         assert len(path) == 0, "Should ignore walls"
