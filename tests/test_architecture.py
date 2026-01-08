@@ -11,7 +11,7 @@ class MockEnv:
         self.rows = rows
         self.cols = cols
 
-    def get_neighbors(self, r, c, radius):
+    def get_neighbors(self, r, c, radius=1):
         # Return center only for testing specific logic, or mocked neighbors
         return [(r, c)]
 
