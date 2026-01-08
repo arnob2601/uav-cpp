@@ -14,14 +14,15 @@ def test_resurfacing_planner_with_drift():
 
     start_pose = Pose(2, 2, 0.0)
 
-    # 1. Setup ResurfacingPlanner with LawnmowerPolicy
-    policy = LawnmowerPolicy(radius=3)
+    # 1. Setup ResurfacingPlanner with TSPRegionPolicy (more robust for drift)
+    from uav.policies import TSPRegionPolicy
+    policy = TSPRegionPolicy(radius=3)
     # Resurface frequently to correct drift
     planner = ResurfacingPlanner(
         policy=policy,
         start_pose=start_pose,
         grid_config={'rows': ROWS, 'cols': COLS},
-        resurface_interval=100
+        resurface_interval=200
     )
 
     robot = UnderwaterRobot(start_pose, planner, grid)
@@ -66,7 +67,7 @@ def test_resurfacing_planner_with_drift():
         valid_cells = (ROWS - 2) * (COLS - 2)
         # status returned by step() has covered_cells
         status = sim._check_mission_status()
-        if status['covered_cells'] / valid_cells > 0.95:
+        if status['covered_cells'] / valid_cells == 1.0:
             break
 
     # 4. Verify
@@ -90,8 +91,8 @@ def test_resurfacing_planner_with_drift():
 
     # We expect decent coverage, certainly better than random walk, but maybe not 100% due to walls/drift
     # Achieving ~70% in tests. Setting threshold to 65%.
-    uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage, "Resurfacing with Drift", "data/resurfacing_with_drift.png")
-    assert coverage_ratio > 0.95, f"Expected >95% coverage with drift, got {coverage_ratio:.2%}"
+    uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage, "Resurfacing with Drift", "data/resurfacing_with_drift.png", surface_indices=sim.surface_indices)
+    assert coverage_ratio == 1.0, f"Expected 100% coverage with drift, got {coverage_ratio:.2%}"
 
     # Also verify that we actually had drift
     # Hard to verify explicitly without recording, but we passed non-zero param.
