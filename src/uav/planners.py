@@ -58,10 +58,9 @@ class ResurfacingPlanner(BlindPlanner):
     """
     Resurfaces every N steps and plans for remaining area.
     """
-    def __init__(self, policy, start_pose, grid_config, resurface_interval=50):
+    def __init__(self, policy, start_pose, resurface_interval=50):
         super().__init__([])  # Start with empty waypoints, will plan on first step/update
         self.policy = policy
-        self.grid_config = grid_config
         self.resurface_interval = resurface_interval
         self.step_counter = 0
         self.state = "NAVIGATING" # NAVIGATING, RESURFACING
@@ -84,7 +83,7 @@ class ResurfacingPlanner(BlindPlanner):
         if self.state == "RESURFACING":
             self.state = "NAVIGATING"
             self._replan(belief_state)
-            
+
             # If after replanning (with fresh truth) we have no waypoints, it means we are truly done.
             if not self.waypoints:
                 return Action(type=ActionType.MOVE, vx=0.0, vy=0.0, dt=1.0)
@@ -105,8 +104,7 @@ class ResurfacingPlanner(BlindPlanner):
         """
         new_waypoints = self.policy.plan(
             belief_state.pose,
-            belief_state.perceived_occupancy_grid,
-            self.grid_config
+            belief_state.perceived_occupancy_grid
         )
         # Reset BlindPlanner queue
         self.waypoints = list(new_waypoints)

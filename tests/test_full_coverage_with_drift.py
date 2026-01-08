@@ -18,7 +18,7 @@ def test_full_coverage_tsp_replanning_with_drift(seed):
     random.seed(seed)
 
     # Setup 30x30 grid
-    ROWS, COLS = 32, 32
+    ROWS, COLS = 102, 102
     grid = uav.environment.Grid(ROWS, COLS)
 
     start_pose = Pose(2, 2, 0.0)
@@ -31,7 +31,6 @@ def test_full_coverage_tsp_replanning_with_drift(seed):
     planner = ResurfacingPlanner(
         policy=policy,
         start_pose=start_pose,
-        grid_config={'rows': ROWS, 'cols': COLS},
         resurface_interval=200 # Reasonably long
     )
 
@@ -45,7 +44,7 @@ def test_full_coverage_tsp_replanning_with_drift(seed):
 
     # 3. Run Simulation
     # 5000 steps should be enough for 30x30
-    max_steps = 50000
+    max_steps = 10000
     steps = 0
 
     while steps < max_steps:

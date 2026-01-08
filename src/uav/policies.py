@@ -10,14 +10,14 @@ class PlanningPolicy(ABC):
     Abstract base class for planning policies.
     """
     @abstractmethod
-    def plan(self, current_pose: Pose, belief_map: np.ndarray, grid_config: dict) -> List[Tuple[float, float]]:
+    @abstractmethod
+    def plan(self, current_pose: Pose, belief_map: np.ndarray) -> List[Tuple[float, float]]:
         """
         Generates a list of waypoints (x, y) to cover the remaining area.
 
         Args:
             current_pose: Robot's current belief pose.
             belief_map: 2D array where >0 indicates covered/scanned.
-            grid_config: Dict with 'rows' and 'cols'.
 
         Returns:
             List of (x, y) tuples.
@@ -32,8 +32,8 @@ class LawnmowerPolicy(PlanningPolicy):
     def __init__(self, radius=5):
         self.radius = radius
 
-    def plan(self, current_pose: Pose, belief_map: np.ndarray, grid_config: dict) -> List[Tuple[float, float]]:
-        rows, cols = grid_config['rows'], grid_config['cols']
+    def plan(self, current_pose: Pose, belief_map: np.ndarray) -> List[Tuple[float, float]]:
+        rows, cols = belief_map.shape
 
         # 1. Identify unvisited areas
         unvisited_mask = (belief_map == 0)
@@ -87,5 +87,5 @@ class TSPRegionPolicy(PlanningPolicy):
     def __init__(self, radius=3):
         self.radius = radius
 
-    def plan(self, current_pose: Pose, belief_map: np.ndarray, grid_config: dict) -> List[Tuple[float, float]]:
-        return planner.plan_coverage_tsp(belief_map, grid_config, current_pose, self.radius)
+    def plan(self, current_pose: Pose, belief_map: np.ndarray) -> List[Tuple[float, float]]:
+        return planner.plan_coverage_tsp(belief_map, current_pose, radius=self.radius)

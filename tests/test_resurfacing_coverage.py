@@ -17,12 +17,12 @@ def test_resurfacing_planner_with_drift():
     # 1. Setup ResurfacingPlanner with TSPRegionPolicy (more robust for drift)
     from uav.policies import TSPRegionPolicy
     policy = TSPRegionPolicy(radius=3)
-    # Resurface frequently to correct drift
+    # Resurface frequently
+    # Create Planner
     planner = ResurfacingPlanner(
         policy=policy,
         start_pose=start_pose,
-        grid_config={'rows': ROWS, 'cols': COLS},
-        resurface_interval=200
+        resurface_interval=20 # Frequent checking
     )
 
     robot = UnderwaterRobot(start_pose, planner, grid)
