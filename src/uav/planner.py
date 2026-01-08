@@ -330,3 +330,162 @@ def planning(ox, oy, resolution,
     px, py = sweep_path_search(sweep_searcher, grid_map)
     rx, ry = convert_global_coordinate(px, py, sweep_vec, sweep_start_position)
     return list(rx), list(ry)
+
+
+def plan_coverage_tsp(belief_map, grid_config, start_pose, radius=3):
+    """
+    Plans a path to cover all unvisited areas in the belief map.
+
+    1. Clusters unvisited cells into disjoint regions.
+    2. Generates a sweep path (lawnmower) for each region.
+    3. Solves TSP (Greedy) to visit regions efficiently.
+
+    Args:
+        belief_map: 2D numpy array (0=Unvisited, 1=Visited)
+        grid_config: Dict {'rows': int, 'cols': int}
+        start_pose: Pose object or tuple (x, y)
+        radius: Sweep radius/margin
+
+    Returns:
+        List of (x, y) tuples representing the path.
+    """
+    rows = grid_config['rows']
+    cols = grid_config['cols']
+    unvisited_mask = (belief_map == 0)
+
+    # Filter out walls (assuming 1-cell border)
+    unvisited_mask[0, :] = 0
+    unvisited_mask[rows-1, :] = 0
+    unvisited_mask[:, 0] = 0
+    unvisited_mask[:, cols-1] = 0
+
+    if not np.any(unvisited_mask):
+        return []
+
+    # 1. Cluster unvisited regions
+    labeled_map, num_features = _cluster_unvisited(unvisited_mask, rows, cols)
+
+    if num_features == 0:
+        return []
+
+    # 2. Generate local paths for each cluster
+    cluster_paths = []
+    cluster_centroids = []
+
+    for label_id in range(1, num_features + 1):
+        # Extract points
+        r_indices, c_indices = np.where(labeled_map == label_id)
+
+        # Bounding box
+        min_r, max_r = np.min(r_indices), np.max(r_indices)
+        min_c, max_c = np.min(c_indices), np.max(c_indices)
+
+        # Centroid
+        centroid = (np.mean(c_indices), np.mean(r_indices)) # x, y
+        cluster_centroids.append(centroid)
+
+        # Generate sweep path for box
+        # We call the existing 'planning' function (sweep_path_search wrapper)
+        local_path = _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, rows, cols, radius)
+
+        # Fallback for single points or very small clusters
+        if not local_path:
+            cx = max(0, min(int(centroid[0]), cols - 1))
+            cy = max(0, min(int(centroid[1]), rows - 1))
+            local_path = [(cx, cy)]
+
+        cluster_paths.append(local_path)
+
+    # 3. Solve TSP (Greedy)
+    curr_x, curr_y = 0.0, 0.0
+    if hasattr(start_pose, 'x'):
+        curr_x, curr_y = start_pose.x, start_pose.y
+    else:
+        curr_x, curr_y = start_pose[0], start_pose[1]
+
+    ordered_paths = []
+    remaining_indices = list(range(len(cluster_paths)))
+
+    while remaining_indices:
+        best_idx = -1
+        min_dist = float('inf')
+
+        # Find nearest cluster start or centroid
+        for idx in remaining_indices:
+            # Distance to centroid is a good approximation
+            centroid = cluster_centroids[idx]
+            dist = np.hypot(centroid[0] - curr_x, centroid[1] - curr_y)
+            if dist < min_dist:
+                min_dist = dist
+                best_idx = idx
+
+        # Add to route
+        ordered_paths.extend(cluster_paths[best_idx])
+
+        # Update current pos to last point of added path
+        if cluster_paths[best_idx]:
+            last_pt = cluster_paths[best_idx][-1]
+            curr_x, curr_y = last_pt[0], last_pt[1]
+
+        remaining_indices.remove(best_idx)
+
+    return ordered_paths
+
+
+def _cluster_unvisited(mask, rows, cols):
+    """
+    BFS clustering connected components.
+    """
+    labeled_map = np.zeros_like(mask, dtype=int)
+    label_counter = 0
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    visited = np.zeros_like(mask, dtype=bool)
+
+    for r in range(rows):
+        for c in range(cols):
+            if mask[r, c] and not visited[r, c]:
+                label_counter += 1
+                stack = [(r, c)]
+                visited[r, c] = True
+                labeled_map[r, c] = label_counter
+
+                while stack:
+                    curr_r, curr_c = stack.pop()
+                    for dr, dc in directions:
+                        nr, nc = curr_r + dr, curr_c + dc
+                        if 0 <= nr < rows and 0 <= nc < cols:
+                            if mask[nr, nc] and not visited[nr, nc]:
+                                visited[nr, nc] = True
+                                labeled_map[nr, nc] = label_counter
+                                stack.append((nr, nc))
+    return labeled_map, label_counter
+
+
+def _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, all_rows, all_cols, radius):
+    margin = radius
+    p_min_r = max(0, min_r - margin)
+    p_max_r = min(all_rows - 1, max_r + margin)
+    p_min_c = max(0, min_c - margin)
+    p_max_c = min(all_cols - 1, max_c + margin)
+
+    ox = [p_min_c, p_max_c, p_max_c, p_min_c, p_min_c]
+    oy = [p_min_r, p_min_r, p_max_r, p_max_r, p_min_r]
+
+    resolution = 1.0 * radius
+    # Call the main planning function in this module
+    try:
+        rx, ry = planning(ox, oy, resolution)
+    except ValueError:
+        # Planner can crash on very small grids/polygons
+        rx, ry = [], []
+
+    path = []
+    if not rx:
+        return path
+
+    for x, y in zip(rx, ry):
+        cx = max(0, min(x, all_cols - 1))
+        cy = max(0, min(y, all_rows - 1))
+        path.append((cx, cy))
+
+    return path

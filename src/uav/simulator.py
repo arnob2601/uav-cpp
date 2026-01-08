@@ -15,6 +15,7 @@ class CoverageSimulator:
         self.true_map_coverage = np.zeros((env_grid.rows, env_grid.cols))
         self._update_coverage(self.true_pose)  # Mark initial position as covered
         self.history = [self.true_pose]
+        self.surface_indices = []
 
     def step(self):
         # 1. Get intention from Robot
@@ -41,6 +42,9 @@ class CoverageSimulator:
                 pass
 
         elif action.type == ActionType.RESURFACE:
+            # Record surfacing event at the current history tip
+            self.surface_indices.append(len(self.history) - 1)
+
             # Teleport robot to surface (or simulate ascent)
             # Prepare 'GPS' data and Map correction to send back to robot
             # In this simple sim, we return the Perfect Pose and the Perfect Map (of what was covered)
@@ -114,5 +118,6 @@ class CoverageSimulator:
         new_sim.true_pose = copy.deepcopy(self.true_pose)
         new_sim.true_map_coverage = self.true_map_coverage.copy()
         new_sim.history = copy.deepcopy(self.history)
+        new_sim.surface_indices = copy.deepcopy(self.surface_indices)
 
         return new_sim

@@ -75,20 +75,27 @@ class ResurfacingPlanner(BlindPlanner):
 
         self.step_counter += 1
 
+        # Standard Interval Resurfacing
         if self.step_counter % self.resurface_interval == 0:
             self.state = "RESURFACING"
             return Action(type=ActionType.RESURFACE, dt=5.0)
 
-        # If we just finished resurfacing, we might need to know?
-        # Actually the robot just teleports and gives us a new map/pose via update_internal_state
-        # But get_next_action is called AFTER update_internal_state.
-
-        # We need a way to detect "Just Resurfaced".
-        # We can track it via state flag.
+        # Handle Post-Resurface Replan
         if self.state == "RESURFACING":
-            # We just came back from resurface
             self.state = "NAVIGATING"
             self._replan(belief_state)
+            
+            # If after replanning (with fresh truth) we have no waypoints, it means we are truly done.
+            if not self.waypoints:
+                return Action(type=ActionType.MOVE, vx=0.0, vy=0.0, dt=1.0)
+
+        # End-of-Path Verification
+        # If queue is empty (finished current segment), we must surface to verify 
+        # that we haven't missed anything due to drift (Validation).
+        if self.current_waypoint_idx >= len(self.waypoints):
+             # Force a surface action to check ground truth
+             self.state = "RESURFACING"
+             return Action(type=ActionType.RESURFACE, dt=5.0)
 
         return super().get_next_action(belief_state)
 

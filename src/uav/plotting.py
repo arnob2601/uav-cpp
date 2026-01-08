@@ -4,10 +4,11 @@ from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap
 
 
-def plot_results(grid, path_history, coverage_grid, title, filename):
+def plot_results(grid, path_history, coverage_grid, title, filename, surface_indices=None):
     """
     path_history: list of (x, y) tuples or Pose objects
     coverage_grid: 2D numpy array where >0 is covered
+    surface_indices: list of indices in path_history where surfacing occurred
     """
     fig, ax = plt.subplots(figsize=(10, 10))
 
@@ -72,12 +73,26 @@ def plot_results(grid, path_history, coverage_grid, title, filename):
     ax.plot(px[-1], py[-1], 'r*', markersize=15, label='End', zorder=10)
     ax.plot(px[0], py[0], 'go', markersize=10, label='Start', zorder=10)
 
+    # Surface Markers
+    if surface_indices:
+        traj_cmap = plt.get_cmap('viridis')
+        for idx in surface_indices:
+            if 0 <= idx < len(px):
+                # Retrieve color from trajectory colormap based on index
+                color = traj_cmap(norm(idx))
+                # Plot marker ("^" for surface) with black edge for visibility
+                ax.plot(px[idx], py[idx], marker='^', color=color, markeredgecolor='black', markersize=12, zorder=11, label='Surface' if idx == surface_indices[0] else "")
+
     valid_cells_count = (grid.rows - 2) * (grid.cols - 2)
     scanned_count = np.sum(coverage_grid > 0)
     coverage_pct = scanned_count / valid_cells_count * 100
 
     ax.set_title(f"{title}\nCoverage: {scanned_count}/{valid_cells_count} ({coverage_pct:.2f}%)")
-    plt.legend(loc='upper right')
+    
+    # Handle duplicate labels in legend
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys(), loc='upper right')
 
     plt.savefig(filename)
     plt.close()
