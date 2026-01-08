@@ -76,3 +76,16 @@ class LawnmowerPolicy(PlanningPolicy):
             path.append((cx, cy))
 
         return path
+
+
+class TSPRegionPolicy(PlanningPolicy):
+    """
+    Identifies disjoint unvisited regions, generates paths for each,
+    and solves TSP (Greedy) to visit them.
+    This is now a wrapper around the core planner logic.
+    """
+    def __init__(self, radius=3):
+        self.radius = radius
+
+    def plan(self, current_pose: Pose, belief_map: np.ndarray, grid_config: dict) -> List[Tuple[float, float]]:
+        return planner.plan_coverage_tsp(belief_map, grid_config, current_pose, self.radius)
