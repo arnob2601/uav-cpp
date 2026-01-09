@@ -9,9 +9,12 @@ help: ## Show this help message
 	@echo "  clean	Clean build artifacts and virtual environment"
 
 
-.PHONY: test clean
+.PHONY: setup_dirs
+setup_dirs:
+	@uv run python -c "import os; os.makedirs('data', exist_ok=True)"
 
-test:  ## Runs tests (limit scope via PYTEST_FILTER=filter)
+.PHONY: test clean
+test: setup_dirs ## Runs tests (limit scope via PYTEST_FILTER=filter)
 	@uv run pytest -vk $(PYTEST_FILTER)
 
 clean: ## Clean build artifacts and virtual environment
