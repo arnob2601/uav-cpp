@@ -1,10 +1,11 @@
+import os
 import random
 
 import uav
 from uav.simulator import CoverageSimulator
 from uav.robot import UnderwaterRobot
-from uav.planners import ResurfacingPlanner
-from uav.policies import LawnmowerPolicy
+from uav.planners import BlindPlanner
+from uav.policies import TSPRegionPolicy
 from uav.noise_models import UniformNoiseModel
 from uav.datatypes import Pose
 
@@ -21,13 +22,11 @@ def run_simulation_scenario(drift_prob, delta_prob, output_name, title):
     start_pose = Pose(start_x, start_y, 0.0)
 
     # Policy & Planner
-    policy = LawnmowerPolicy(radius=4)
+    policy = TSPRegionPolicy(radius=5)
     # Using ResurfacingPlanner. It will generate the path on init/first step.
-    planner = ResurfacingPlanner(
+    planner = BlindPlanner(
         policy=policy,
-        start_pose=start_pose,
-        grid_config={'rows': ROWS, 'cols': COLS},
-        resurface_interval=50
+        start_pose=start_pose
     )
 
     robot = UnderwaterRobot(start_pose, planner, grid)
@@ -43,28 +42,29 @@ def run_simulation_scenario(drift_prob, delta_prob, output_name, title):
     print(f"[{title}] Simulating...")
 
     while steps < max_steps:
-        # Check if done
-        # Ideally the simulator loop runs blindly, but we need a break condition.
-        # BlindPlanner returns 0 velocity when done.
-
-        # We can peek at planner state or check action
-        # But for strictly proper simulation, we run step()
-
         status = sim.step()
         steps += 1
 
         # Check if robot has stopped moving meaningfully
-        # This is a bit hacky, normally we have a "MissionComplete" flag.
         # BlindPlanner halts by returning 0 velocity actions.
-        if planner.current_waypoint_idx >= len(planner.waypoints) and planner.state == "NAVIGATING":
-            # If planner ran out of waypoints AND is not about to resurface/replan, we might be done.
-            # But ResurfacingPlanner replans?
-            # For simpler termination: if coverage is high enough?
-            # Or if replanning returns empty path (handled by policy returning []).
-            if not planner.waypoints:
-                break
+        if planner.initial_planning_done:
+            # Termination logic
+            if hasattr(planner, 'state'):
+                # ResurfacingPlanner
+                # Truly done if waypoints empty after replan (which implies NAVIGATING state)
+                if not planner.waypoints and planner.state == "NAVIGATING":
+                    break
+            else:
+                # BlindPlanner
+                if planner.current_waypoint_idx >= len(planner.waypoints):
+                    break
 
-    uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage, title, output_name)
+    # Save to data directory
+    if not os.path.exists("data"):
+        os.makedirs("data")
+    full_output_path = os.path.join("data", output_name)
+
+    uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage, title, full_output_path)
 
     valid_cells_count = (ROWS - 2) * (COLS - 2)
     scanned_count = status['covered_cells']
