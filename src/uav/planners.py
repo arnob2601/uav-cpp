@@ -92,9 +92,9 @@ class ResurfacingPlanner(BlindPlanner):
         # If queue is empty (finished current segment), we must surface to verify 
         # that we haven't missed anything due to drift (Validation).
         if self.current_waypoint_idx >= len(self.waypoints):
-             # Force a surface action to check ground truth
-             self.state = "RESURFACING"
-             return Action(type=ActionType.RESURFACE, dt=5.0)
+            # Force a surface action to check ground truth
+            self.state = "RESURFACING"
+            return Action(type=ActionType.RESURFACE, dt=5.0)
 
         return super().get_next_action(belief_state)
 
