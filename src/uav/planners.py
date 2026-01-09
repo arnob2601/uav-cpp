@@ -68,7 +68,7 @@ class ResurfacingPlanner(BlindPlanner):
         super().__init__(policy, start_pose)
         self.resurface_interval = resurface_interval
         self.step_counter = 0
-        self.state = "NAVIGATING" # NAVIGATING, RESURFACING
+        self.state = "NAVIGATING"  # NAVIGATING, RESURFACING
 
     def get_next_action(self, belief_state: RobotState) -> Action:
         # Initial planning handled by super().get_next_action call indirectly?
