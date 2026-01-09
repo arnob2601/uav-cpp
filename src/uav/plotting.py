@@ -89,8 +89,14 @@ def plot_results(grid, path_history, coverage_grid, title, filename, surface_ind
     scanned_count = np.sum(coverage_grid > 0)
     coverage_pct = scanned_count / valid_cells_count * 100
 
-    ax.set_title(f"{title}\nCoverage: {scanned_count}/{valid_cells_count} ({coverage_pct:.2f}%)")
-    
+    # Calculate Path Length (Cost)
+    path_len = 0.0
+    if len(px) > 1:
+        dists = np.sqrt(np.diff(px)**2 + np.diff(py)**2)
+        path_len = np.sum(dists)
+
+    ax.set_title(f"{title}\nCoverage: {scanned_count}/{valid_cells_count} ({coverage_pct:.2f}%) | Cost: {path_len:.2f}")
+
     # Handle duplicate labels in legend
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
