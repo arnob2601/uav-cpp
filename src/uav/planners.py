@@ -1,7 +1,6 @@
 from .interfaces import BasePlanner
 from .datatypes import RobotState, Action, ActionType
 import numpy as np
-import uav.planner  # For the legacy planning utils
 
 
 class BlindPlanner(BasePlanner):
@@ -119,55 +118,3 @@ class ResurfacingPlanner(BlindPlanner):
         self.waypoints = list(new_waypoints)
         self.current_waypoint_idx = 0
 
-
-def generate_lawnmower_path_coordinates(grid_rows, grid_cols, radius=5):
-    """
-    Generates a list of coordinates using the ported planner.
-    """
-    margin = radius
-    min_r, max_r = 1 - margin, grid_rows - 2 + margin
-    min_c, max_c = 1 - margin, grid_cols - 2 + margin
-
-    ox = [min_c, max_c, max_c, min_c, min_c]
-    oy = [min_r, min_r, max_r, max_r, min_r]
-
-    resolution = 1.0 * radius
-
-    # Plan using the old utils
-    rx, ry = uav.planner.planning(ox, oy, resolution)
-
-    dense_path = []
-
-    if not rx:
-        return []
-
-    # Start point
-    curr_r = int(round(ry[0]))
-    curr_c = int(round(rx[0]))
-
-    # Clamp
-    curr_r = max(0, min(curr_r, grid_rows - 1))
-    curr_c = max(0, min(curr_c, grid_cols - 1))
-
-    dense_path.append((curr_c, curr_r))  # Store as x, y
-
-    for i in range(1, len(rx)):
-        target_r = int(round(ry[i]))
-        target_c = int(round(rx[i]))
-
-        target_r = max(0, min(target_r, grid_rows - 1))
-        target_c = max(0, min(target_c, grid_cols - 1))
-
-        while (curr_r, curr_c) != (target_r, target_c):
-            dr = target_r - curr_r
-            dc = target_c - curr_c
-
-            # Step size 1
-            step_r = 0 if dr == 0 else (1 if dr > 0 else -1)
-            step_c = 0 if dc == 0 else (1 if dc > 0 else -1)
-
-            curr_r += step_r
-            curr_c += step_c
-            dense_path.append((curr_c, curr_r))  # x, y
-
-    return dense_path

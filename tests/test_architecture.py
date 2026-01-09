@@ -1,10 +1,23 @@
-from uav.policies import StaticPathPolicy
+from uav.policies import PlanningPolicy
 import pytest
 from uav.datatypes import Pose, Action, ActionType
 from uav.robot import UnderwaterRobot
 from uav.simulator import CoverageSimulator
 from uav.planners import BlindPlanner
 from uav.noise_models import UniformNoiseModel
+import numpy as np
+
+
+class MockPolicy(PlanningPolicy):
+    def __init__(self, waypoints):
+        self.waypoints = waypoints
+        self.returned = False
+
+    def plan(self, current_pose: Pose, belief_map: np.ndarray):
+        if not self.returned:
+            self.returned = True
+            return self.waypoints
+        return []
 
 
 class MockEnv:
@@ -24,7 +37,7 @@ def test_robot_dead_reckoning():
     # Setup
     env = MockEnv(10, 10)
     start_pose = Pose(0, 0, 0)
-    policy = StaticPathPolicy([])
+    policy = MockPolicy([])
     planner = BlindPlanner(policy, start_pose)  # No plan needed
     robot = UnderwaterRobot(start_pose, planner, env)
 
@@ -46,7 +59,7 @@ def test_simulator_drift():
     # Setup
     env = MockEnv(10, 10)
     start_pose = Pose(0, 0, 0)
-    policy = StaticPathPolicy([(10.0, 0.0)])  # Target far away
+    policy = MockPolicy([(10.0, 0.0)])  # Target far away
     planner = BlindPlanner(policy, start_pose)
     robot = UnderwaterRobot(start_pose, planner, env)
 
@@ -89,7 +102,7 @@ def test_boundary_enforcement():
     env = MockEnv(10, 10)
     # Start at right edge (cols=10, valid indices 0..9)
     start_pose = Pose(9.0, 5.0, 0)
-    policy = StaticPathPolicy([])
+    policy = MockPolicy([])
     planner = BlindPlanner(policy, start_pose)
     robot = UnderwaterRobot(start_pose, planner, env)
 
