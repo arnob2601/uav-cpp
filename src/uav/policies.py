@@ -25,57 +25,20 @@ class PlanningPolicy(ABC):
         pass
 
 
-class LawnmowerPolicy(PlanningPolicy):
+class StaticPathPolicy(PlanningPolicy):
     """
-    Generates a lawnmower path for the bounding box of the unvisited area.
+    Returns a predefined path once, then empty.
+    Useful for testing BlindPlanner with static paths.
     """
-    def __init__(self, radius=5):
-        self.radius = radius
+    def __init__(self, waypoints: List[Tuple[float, float]]):
+        self.waypoints = waypoints
+        self.returned = False
 
     def plan(self, current_pose: Pose, belief_map: np.ndarray) -> List[Tuple[float, float]]:
-        rows, cols = belief_map.shape
-
-        # 1. Identify unvisited areas
-        unvisited_mask = (belief_map == 0)
-
-        # If all visited, return empty
-        if not np.any(unvisited_mask):
-            return []
-
-        # 2. Find bounding box of unvisited area
-        r_indices, c_indices = np.where(unvisited_mask)
-
-        min_r, max_r = np.min(r_indices), np.max(r_indices)
-        min_c, max_c = np.min(c_indices), np.max(c_indices)
-
-        # Add some margin/padding for the maneuver, but clamp to grid
-        margin = self.radius
-        p_min_r = max(0, min_r - margin)
-        p_max_r = min(rows - 1, max_r + margin)
-        p_min_c = max(0, min_c - margin)
-        p_max_c = min(cols - 1, max_c + margin)
-
-        ox = [p_min_c, p_max_c, p_max_c, p_min_c, p_min_c]
-        oy = [p_min_r, p_min_r, p_max_r, p_max_r, p_min_r]
-
-        resolution = 1.0 * self.radius
-
-        # Call the underlying planner
-        rx, ry = planner.planning(ox, oy, resolution)
-
-        if not rx:
-            return []
-
-        # 3. Connect current pose to the start of the sweep path?
-        path = []
-
-        for x, y in zip(rx, ry):
-            # Clamp
-            cx = max(0, min(x, cols - 1))
-            cy = max(0, min(y, rows - 1))
-            path.append((cx, cy))
-
-        return path
+        if not self.returned:
+            self.returned = True
+            return self.waypoints
+        return []
 
 
 class TSPRegionPolicy(PlanningPolicy):

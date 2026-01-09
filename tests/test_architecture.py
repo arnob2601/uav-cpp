@@ -1,3 +1,4 @@
+from uav.policies import StaticPathPolicy
 import pytest
 from uav.datatypes import Pose, Action, ActionType
 from uav.robot import UnderwaterRobot
@@ -23,7 +24,8 @@ def test_robot_dead_reckoning():
     # Setup
     env = MockEnv(10, 10)
     start_pose = Pose(0, 0, 0)
-    planner = BlindPlanner([])  # No plan needed for manual stepping
+    policy = StaticPathPolicy([])
+    planner = BlindPlanner(policy, start_pose)  # No plan needed
     robot = UnderwaterRobot(start_pose, planner, env)
 
     # Action: Move 1 unit x
@@ -44,7 +46,8 @@ def test_simulator_drift():
     # Setup
     env = MockEnv(10, 10)
     start_pose = Pose(0, 0, 0)
-    planner = BlindPlanner([(0, 0)])
+    policy = StaticPathPolicy([(10.0, 0.0)])  # Target far away
+    planner = BlindPlanner(policy, start_pose)
     robot = UnderwaterRobot(start_pose, planner, env)
 
     # Force drift in noise model
@@ -66,7 +69,7 @@ def test_simulator_drift():
     # Robot step consults planner.
     # BlindPlanner with waypoints [(10, 0)] might produce vx=1.
 
-    planner.waypoints = [(10.0, 0.0)]  # Target far away
+    # planner.waypoints = [(10.0, 0.0)]  # Target far away - Handled by policy now
 
     action = robot.step()
     assert action.vx > 0
@@ -86,7 +89,8 @@ def test_boundary_enforcement():
     env = MockEnv(10, 10)
     # Start at right edge (cols=10, valid indices 0..9)
     start_pose = Pose(9.0, 5.0, 0)
-    planner = BlindPlanner([])
+    policy = StaticPathPolicy([])
+    planner = BlindPlanner(policy, start_pose)
     robot = UnderwaterRobot(start_pose, planner, env)
 
     # Simple model that just moves as requested (no random drift for this test to be deterministic)

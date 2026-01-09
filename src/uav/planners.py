@@ -6,18 +6,24 @@ import uav.planner  # For the legacy planning utils
 
 class BlindPlanner(BasePlanner):
     """
-    Follows a pre-defined path blindly.
+    Follows a policy-generated path blindly.
+    Termination follows when the path is fully traversed.
     """
-    def __init__(self, waypoints):
-        """
-        waypoints: list of (x, y) tuples or Pose objects
-        """
-        super().__init__()
-        self.waypoints = list(waypoints)  # Queue of waypoints (x, y)
+    def __init__(self, policy, start_pose):
+        # BasePlanner has no __init__
+        self.policy = policy
+        self.start_pose = start_pose
+        self.waypoints = []  # Queue of waypoints (x, y)
         self.current_waypoint_idx = 0
-        self.arrival_threshold = 1.0  # Distance to consider waypoint reached
+        self.arrival_threshold = 1.0
+        self.initial_planning_done = False
 
     def get_next_action(self, belief_state: RobotState) -> Action:
+        # Initial Plan
+        if not self.initial_planning_done:
+            self.waypoints = self.policy.plan(belief_state.pose, belief_state.perceived_occupancy_grid)
+            self.initial_planning_done = True
+
         if self.current_waypoint_idx >= len(self.waypoints):
             # Finished
             return Action(type=ActionType.MOVE, vx=0.0, vy=0.0, dt=1.0)
@@ -46,7 +52,7 @@ class BlindPlanner(BasePlanner):
 
         # Normalize velocity (unit step per dt=1)
         if dist > 0:
-            vx = (dx / dist)  # * speed
+            vx = (dx / dist)
             vy = (dy / dist)
         else:
             vx, vy = 0.0, 0.0
@@ -59,18 +65,24 @@ class ResurfacingPlanner(BlindPlanner):
     Resurfaces every N steps and plans for remaining area.
     """
     def __init__(self, policy, start_pose, resurface_interval=50):
-        super().__init__([])  # Start with empty waypoints, will plan on first step/update
-        self.policy = policy
+        super().__init__(policy, start_pose)
         self.resurface_interval = resurface_interval
         self.step_counter = 0
         self.state = "NAVIGATING" # NAVIGATING, RESURFACING
-        self.initial_planning_done = False
 
     def get_next_action(self, belief_state: RobotState) -> Action:
-        # Initial plan
+        # Initial planning handled by super().get_next_action call indirectly?
+        # No, super() does logic.
+        # But we want to intercept initial planning to set step counter?
+        # Actually super() handles initial planning on first call.
+        pass
+
+        # We need to call super() to get the MOVE action, but handle RESURFACE logic first.
+
+        # Initial planning check (for step counter reset or similar if needed)
         if not self.initial_planning_done:
-            self._replan(belief_state)
-            self.initial_planning_done = True
+            # Let super handle it, but we might want to know.
+            pass
 
         self.step_counter += 1
 
@@ -84,13 +96,11 @@ class ResurfacingPlanner(BlindPlanner):
             self.state = "NAVIGATING"
             self._replan(belief_state)
 
-            # If after replanning (with fresh truth) we have no waypoints, it means we are truly done.
+            # If after replanning we have no waypoints, it means we are truly done.
             if not self.waypoints:
                 return Action(type=ActionType.MOVE, vx=0.0, vy=0.0, dt=1.0)
 
         # End-of-Path Verification
-        # If queue is empty (finished current segment), we must surface to verify 
-        # that we haven't missed anything due to drift (Validation).
         if self.current_waypoint_idx >= len(self.waypoints):
             # Force a surface action to check ground truth
             self.state = "RESURFACING"
@@ -106,7 +116,6 @@ class ResurfacingPlanner(BlindPlanner):
             belief_state.pose,
             belief_state.perceived_occupancy_grid
         )
-        # Reset BlindPlanner queue
         self.waypoints = list(new_waypoints)
         self.current_waypoint_idx = 0
 

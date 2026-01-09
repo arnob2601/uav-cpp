@@ -2,6 +2,7 @@ import pytest
 import uav
 from uav.simulator import CoverageSimulator
 from uav.robot import UnderwaterRobot
+from uav.policies import StaticPathPolicy
 from uav.planners import BlindPlanner, generate_lawnmower_path_coordinates
 from uav.noise_models import UniformNoiseModel
 from uav.datatypes import Pose
@@ -20,7 +21,8 @@ def test_blind_planner_full_coverage_no_drift():
     start_pose = Pose(start_x, start_y, 0.0)
 
     # 2. Setup Robot with BlindPlanner (follows path exactly)
-    planner = BlindPlanner(path_coords)
+    policy = StaticPathPolicy(path_coords)
+    planner = BlindPlanner(policy, start_pose)
     robot = UnderwaterRobot(start_pose, planner, grid)
 
     # 3. No Drift
@@ -34,7 +36,7 @@ def test_blind_planner_full_coverage_no_drift():
 
     while steps < max_steps:
         # Check if done
-        if planner.current_waypoint_idx >= len(planner.waypoints):
+        if planner.initial_planning_done and planner.current_waypoint_idx >= len(planner.waypoints):
             break
 
         sim.step()
