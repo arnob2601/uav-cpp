@@ -52,9 +52,9 @@ class GaussianAccumulatedNoiseModel(NoiseModel):
         # 1. Deterministic move
         dx = action.vx * action.dt
         dy = action.vy * action.dt
-        
+
         # 2. Add Gaussian Noise
-        # Noise scales with distance? Or per step? 
+        # Noise scales with distance? Or per step?
         # "true_pose += action + random_gaussian_noise()"
         # Usually noise is proportional to sqrt(distance) for standard deviation,
         # or variance is proportional to distance.
@@ -70,7 +70,7 @@ class GaussianAccumulatedNoiseModel(NoiseModel):
 
         new_x = true_pose.x + dx + noise_x
         new_y = true_pose.y + dy + noise_y
-        
+
         return Pose(new_x, new_y, true_pose.theta)
 
     def predict_motion(self, belief_pose: Pose, action: Action) -> Pose:
@@ -89,10 +89,9 @@ class GaussianAccumulatedNoiseModel(NoiseModel):
         dx = action.vx * action.dt
         dy = action.vy * action.dt
         dist = (dx**2 + dy**2)**0.5
-        
+
         variance_step = self.drift_variance * dist
         return np.array([
             [variance_step, 0.0],
             [0.0, variance_step]
         ])
-

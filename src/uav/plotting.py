@@ -1,9 +1,9 @@
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap
+matplotlib.use('Agg')
 
 
 def plot_results(grid, path_history, coverage_grid, title, filename, surface_indices=None):
@@ -83,7 +83,8 @@ def plot_results(grid, path_history, coverage_grid, title, filename, surface_ind
                 # Retrieve color from trajectory colormap based on index
                 color = traj_cmap(norm(idx))
                 # Plot marker ("^" for surface) with black edge for visibility
-                ax.plot(px[idx], py[idx], marker='^', color=color, markeredgecolor='black', markersize=12, zorder=11, label='Surface' if idx == surface_indices[0] else "")
+                ax.plot(px[idx], py[idx], marker='^', color=color, markeredgecolor='black', markersize=12, zorder=11,
+                        label='Surface' if idx == surface_indices[0] else "")
 
     valid_cells_count = (grid.rows - 2) * (grid.cols - 2)
     scanned_count = np.sum(coverage_grid > 0)
