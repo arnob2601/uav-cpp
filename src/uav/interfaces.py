@@ -22,9 +22,6 @@ class NoiseModel(ABC):
 
 class BasePlanner(ABC):
     """Abstract base for all planning strategies"""
-    def __init__(self, policy=None):
-        self.plan_queue = []
-        self.policy = policy
 
     @abstractmethod
     def get_next_action(self, belief_state: RobotState) -> Action:

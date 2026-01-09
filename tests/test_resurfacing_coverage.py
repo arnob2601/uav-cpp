@@ -1,8 +1,8 @@
 import uav
 from uav.simulator import CoverageSimulator
 from uav.robot import UnderwaterRobot
+from uav.policies import TSPRegionPolicy
 from uav.planners import ResurfacingPlanner
-from uav.policies import LawnmowerPolicy
 from uav.noise_models import UniformNoiseModel
 from uav.datatypes import Pose
 
@@ -15,14 +15,13 @@ def test_resurfacing_planner_with_drift():
     start_pose = Pose(2, 2, 0.0)
 
     # 1. Setup ResurfacingPlanner with TSPRegionPolicy (more robust for drift)
-    from uav.policies import TSPRegionPolicy
     policy = TSPRegionPolicy(radius=3)
     # Resurface frequently
     # Create Planner
     planner = ResurfacingPlanner(
         policy=policy,
         start_pose=start_pose,
-        resurface_interval=20 # Frequent checking
+        resurface_interval=20  # Frequent checking
     )
 
     robot = UnderwaterRobot(start_pose, planner, grid)
