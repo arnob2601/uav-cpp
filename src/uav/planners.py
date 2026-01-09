@@ -117,4 +117,3 @@ class ResurfacingPlanner(BlindPlanner):
         )
         self.waypoints = list(new_waypoints)
         self.current_waypoint_idx = 0
-

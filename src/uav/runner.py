@@ -1,7 +1,7 @@
 import numpy as np
 from .simulator import CoverageSimulator
-from .datatypes import Action, ActionType, Pose, RobotState
-from .environment import Grid
+from .datatypes import Action, ActionType
+
 
 class ScenarioRunner:
     def __init__(self):
@@ -12,7 +12,7 @@ class ScenarioRunner:
         Calculates the Value of Information (VoI) by comparing:
         1. Continuing without surfacing (Q_no_surface)
         2. Surfacing now, then continuing (Q_surface)
-        
+
         Returns:
             voi = Cost(No Surface) - Cost(Surface)
             Positive value means Surfacing is better (saves distance/cost).
@@ -36,13 +36,13 @@ class ScenarioRunner:
             'true_pose': sim_surface.true_pose,
             'true_map_patch': sim_surface.true_map_coverage.copy()
         }
-        sim_surface.noise_model.drift_prob = 0.0 # If model has this
+        sim_surface.noise_model.drift_prob = 0.0  # If model has this
 
         # Robot Update
         sim_surface.robot.update_internal_state(action, observation)
 
         # Cost of surfacing
-        cost_surface_action = 20.0 # Equivalent meters cost (as per specs)
+        cost_surface_action = 20.0  # Equivalent meters cost (as per specs)
 
         # Continue simulation
         cost_continue = self._simulate_and_compute_cost(sim_surface, time_steps_ahead)
@@ -63,7 +63,7 @@ class ScenarioRunner:
             prev_pose = sim.true_pose
 
             # Step
-            status = sim.step()
+            _ = sim.step()
 
             # Calculate distance moved (True distance)
             curr_pose = sim.true_pose
@@ -83,7 +83,7 @@ class ScenarioRunner:
         """
         Calculate the cost to visit all "holes" (False Positives).
         Holes are cells that are NOT covered in Truth, but Robot THINKS are covered.
-        
+
         Actually, specs say: "Compare G_belief vs G_truth"
         "Identify 'holes' (cells in Belief but not in Truth)" -> This implies Robot thinks it covered them (Belief=1), but Truth=0.
         Wait, coverage is usually about ensuring Truth=1.
@@ -103,16 +103,16 @@ class ScenarioRunner:
         # Plan path to visit all holes
         # Salesman problem. Greedy approximation.
         # Start at current true pose
-        current_pos = (sim.true_pose.y, sim.true_pose.x) # r, c
+        current_pos = (sim.true_pose.y, sim.true_pose.x)  # r, c
 
-        remaining_holes = [tuple(h) for h in hole_indices] # List of (r, c)
+        remaining_holes = [tuple(h) for h in hole_indices]  # List of (r, c)
 
         total_dist = 0.0
 
         # Simple Greedy TSP
         while remaining_holes:
             # Find closest hole
-            dists = [np.hypot(h[0]-current_pos[0], h[1]-current_pos[1]) for h in remaining_holes]
+            dists = [np.hypot(h[0] - current_pos[0], h[1] - current_pos[1]) for h in remaining_holes]
             min_idx = np.argmin(dists)
             nearest = remaining_holes[min_idx]
             dist = dists[min_idx]

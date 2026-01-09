@@ -95,8 +95,8 @@ class UnderwaterRobot:
 
         new_robot = UnderwaterRobot(
             start_pose=copy.deepcopy(self.belief_pose),
-            planner=self.planner.clone(), # Deep copy planner
-            env=self.env, # Share environment map
+            planner=self.planner.clone(),  # Deep copy planner
+            env=self.env,  # Share environment map
             noise_model=self.noise_model.clone() if self.noise_model else None
         )
 

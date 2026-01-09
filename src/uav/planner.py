@@ -353,9 +353,9 @@ def plan_coverage_tsp(belief_map, start_pose, radius=3):
 
     # Filter out walls (assuming 1-cell border)
     unvisited_mask[0, :] = 0
-    unvisited_mask[rows-1, :] = 0
+    unvisited_mask[rows - 1, :] = 0
     unvisited_mask[:, 0] = 0
-    unvisited_mask[:, cols-1] = 0
+    unvisited_mask[:, cols - 1] = 0
 
     if not np.any(unvisited_mask):
         return []
