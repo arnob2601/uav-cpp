@@ -20,7 +20,7 @@ def test_blind_planner_full_coverage_no_drift(grid_size, radius):
     # The BlindPlanner will invoke the policy once at start.
     policy = TSPRegionPolicy(radius=radius)
     planner = BlindPlanner(policy, start_pose)
-    robot = UnderwaterRobot(start_pose, planner, grid)
+    robot = UnderwaterRobot(start_pose, planner, grid, sensor_radius=radius)
 
     # 2. No Drift
     noise_model = UniformNoiseModel(drift_prob=0.0, delta_prob=0.0)

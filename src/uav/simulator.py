@@ -70,7 +70,7 @@ class CoverageSimulator:
         """
         r = int(round(pose.y))
         c = int(round(pose.x))
-        neighbors = self.env.get_neighbors(r, c)
+        neighbors = self.env.get_neighbors(r, c, radius=self.robot.sensor_radius)
         for nr, nc in neighbors:
             self.true_map_coverage[nr, nc] = 1.0
 

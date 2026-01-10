@@ -5,10 +5,11 @@ from .interfaces import BasePlanner
 
 
 class UnderwaterRobot:
-    def __init__(self, start_pose: Pose, planner: BasePlanner, env, noise_model=None):
+    def __init__(self, start_pose: Pose, planner: BasePlanner, env, noise_model=None, sensor_radius=3.0):
         self.planner = planner
         self.env = env
         self.noise_model = noise_model
+        self.sensor_radius = sensor_radius
         # Belief State (Where robot thinks it is)
         self.belief_pose = start_pose
         # Sigma: Uncertainty covariance (2x2)
@@ -97,7 +98,8 @@ class UnderwaterRobot:
             start_pose=copy.deepcopy(self.belief_pose),
             planner=self.planner.clone(),  # Deep copy planner
             env=self.env,  # Share environment map
-            noise_model=self.noise_model.clone() if self.noise_model else None
+            noise_model=self.noise_model.clone() if self.noise_model else None,
+            sensor_radius=self.sensor_radius
         )
 
         # 2. Copy Internal State
@@ -115,8 +117,8 @@ class UnderwaterRobot:
         r = int(round(pose.y))
         c = int(round(pose.x))
 
-        # Simulate sensor radius = 3
-        neighbors = self.env.get_neighbors(r, c)
+        # Simulate sensor radius
+        neighbors = self.env.get_neighbors(r, c, radius=self.sensor_radius)
         rows, cols = self.perceived_map.shape
         for nr, nc in neighbors:
             if 0 <= nr < rows and 0 <= nc < cols:
