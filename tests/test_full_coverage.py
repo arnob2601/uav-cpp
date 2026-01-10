@@ -8,16 +8,17 @@ from uav.noise_models import UniformNoiseModel
 from uav.datatypes import Pose
 
 
-def test_blind_planner_full_coverage_no_drift():
+@pytest.mark.parametrize("grid_size, radius", [((32, 32), 3), ((64, 64), 5), ((128, 128), 7)])
+def test_blind_planner_full_coverage_no_drift(grid_size, radius):
     # Setup 30x30 grid (smaller for faster TSP test)
-    ROWS, COLS = 32, 32
+    ROWS, COLS = grid_size
     grid = uav.environment.Grid(ROWS, COLS)
 
     start_pose = Pose(2, 2, 0.0)
 
     # 1. Setup Robot with BlindPlanner and TSP Policy
     # The BlindPlanner will invoke the policy once at start.
-    policy = TSPRegionPolicy(radius=3)
+    policy = TSPRegionPolicy(radius=radius)
     planner = BlindPlanner(policy, start_pose)
     robot = UnderwaterRobot(start_pose, planner, grid)
 
@@ -58,8 +59,10 @@ def test_blind_planner_full_coverage_no_drift():
     coverage_ratio = scanned_in_valid / valid_cells if valid_cells > 0 else 0
     print(f"Coverage: {scanned_in_valid}/{valid_cells} ({coverage_ratio:.2%})")
 
+    # add grid information and radius to filename
+    filename = f"data/full_coverage_tsp_no_drift_{ROWS}x{COLS}_r{radius}.png"
     uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage,
-                              "Blind Planner TSP Coverage No Drift", "data/full_coverage_tsp_no_drift.png",
+                              "Blind Planner TSP Coverage No Drift", filename,
                               surface_indices=sim.surface_indices)
 
     # TSP Policy should theoretically achieve high coverage
