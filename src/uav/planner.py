@@ -469,15 +469,17 @@ def _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, all_rows, all_cols, 
     p_min_c = max(padding, min_c - margin)
     p_max_c = min(all_cols - 1 - padding, max_c + margin)
 
+    if p_min_r > p_max_r or p_min_c > p_max_c:
+        return []
+
     ox = [p_min_c, p_max_c, p_max_c, p_min_c, p_min_c]
     oy = [p_min_r, p_min_r, p_max_r, p_max_r, p_min_r]
 
-    resolution = 1.0 * radius
+    resolution = 0.5 * radius
     # Call the main planning function in this module
     try:
         rx, ry = planning(ox, oy, resolution)
     except ValueError:
-        # Planner can crash on very small grids/polygons
         rx, ry = [], []
 
     path = []

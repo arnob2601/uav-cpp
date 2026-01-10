@@ -26,10 +26,10 @@ class Grid:
         # Get neighbors within Euclidean distance
         neighbors = []
         # Optimization: scan bounding box
-        r_min = max(0, r - radius)
-        r_max = min(self.rows - 1, r + radius)
-        c_min = max(0, c - radius)
-        c_max = min(self.cols - 1, c + radius)
+        r_min = max(0, int(r - radius))
+        r_max = min(self.rows - 1, int(r + radius))
+        c_min = max(0, int(c - radius))
+        c_max = min(self.cols - 1, int(c + radius))
 
         for i in range(r_min, r_max + 1):
             for j in range(c_min, c_max + 1):

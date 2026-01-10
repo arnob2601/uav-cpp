@@ -22,7 +22,7 @@ class TestSimBranching(unittest.TestCase):
         self.env = Grid(10, 10)
         self.planner = MockPlanner()
         self.noise_model = GaussianAccumulatedNoiseModel(drift_variance=0.1)
-        self.robot = UnderwaterRobot(Pose(5,5), self.planner, self.env, self.noise_model)
+        self.robot = UnderwaterRobot(Pose(5,5), self.planner, self.env, self.noise_model, sensor_radius=5)
         self.sim = CoverageSimulator(self.env, self.robot, self.noise_model)
 
     def test_clone_independence(self):
