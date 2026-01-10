@@ -8,7 +8,26 @@ from uav.noise_models import UniformNoiseModel
 from uav.datatypes import Pose
 
 
-@pytest.mark.parametrize("grid_size, radius", [((32, 32), 3), ((64, 64), 5), ((128, 128), 7)])
+@pytest.mark.parametrize(
+    "grid_size, radius",
+    [
+        ((32, 32), 3),
+        ((32, 32), 4),
+        ((32, 32), 5),
+        ((32, 32), 6),
+        ((32, 32), 7),
+        ((64, 64), 3),
+        ((64, 64), 4),
+        ((64, 64), 5),
+        ((64, 64), 6),
+        ((64, 64), 7),
+        ((128, 128), 3),
+        ((128, 128), 4),
+        ((128, 128), 5),
+        ((128, 128), 6),
+        ((128, 128), 7),
+    ]
+)
 def test_blind_planner_full_coverage_no_drift(grid_size, radius):
     # Setup 30x30 grid (smaller for faster TSP test)
     ROWS, COLS = grid_size
@@ -66,4 +85,4 @@ def test_blind_planner_full_coverage_no_drift(grid_size, radius):
                               surface_indices=sim.surface_indices)
 
     # TSP Policy should theoretically achieve high coverage
-    assert coverage_ratio > 0.95, f"Expected high coverage, got {coverage_ratio:.2%}"
+    assert coverage_ratio > 0.98, f"Expected high coverage, got {coverage_ratio:.2%}"
