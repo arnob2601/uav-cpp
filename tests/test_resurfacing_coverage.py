@@ -21,10 +21,10 @@ def test_resurfacing_planner_with_drift():
     planner = ResurfacingPlanner(
         policy=policy,
         start_pose=start_pose,
-        resurface_interval=20  # Frequent checking
+        resurface_interval=60  # Frequent checking
     )
 
-    robot = UnderwaterRobot(start_pose, planner, grid)
+    robot = UnderwaterRobot(start_pose, planner, grid, sensor_radius=5)
 
     # 2. Add Drift
     # Reduced drift for test stability
@@ -34,7 +34,7 @@ def test_resurfacing_planner_with_drift():
 
     # 3. Run Simulation
     # 30x30 = 900 cells.
-    max_steps = 100000
+    max_steps = ROWS * COLS * 10
     steps = 0
 
     resurface_count = 0

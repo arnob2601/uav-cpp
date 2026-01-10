@@ -6,11 +6,11 @@ from uav.datatypes import Pose
 
 class TestTSPPlanner:
     def test_clustering_single_block(self):
-        """Test clustering on a simple 10x10 map with one 3x3 block unvisited"""
-        rows, cols = 10, 10
+        """Test clustering on a simple 50x50 map with one 10x10 block unvisited"""
+        rows, cols = 50, 50
         belief_map = np.ones((rows, cols))
         # Create unvisited block in middle
-        belief_map[3:6, 3:6] = 0
+        belief_map[20:30, 20:30] = 0
 
         start_pose = Pose(0, 0, 0)
 
@@ -25,14 +25,14 @@ class TestTSPPlanner:
 
     def test_clustering_separated_blocks(self):
         """Test clustering with two separated blocks"""
-        rows, cols = 20, 20
+        rows, cols = 50, 50
         belief_map = np.ones((rows, cols))
 
         # Block 1 (Top Left approx)
-        belief_map[2:5, 2:5] = 0
+        belief_map[5:15, 5:15] = 0
 
         # Block 2 (Bottom Right approx)
-        belief_map[15:18, 15:18] = 0
+        belief_map[35:45, 35:45] = 0
 
         start_pose = Pose(0, 0, 0)
 
@@ -49,9 +49,9 @@ class TestTSPPlanner:
 
         for x, y in path:
             r, c = int(y), int(x)
-            if 2 <= r < 5 and 2 <= c < 5:
+            if 5 <= r < 15 and 5 <= c < 15:
                 visited_b1 = True
-            if 15 <= r < 18 and 15 <= c < 18:
+            if 35 <= r < 45 and 35 <= c < 45:
                 visited_b2 = True
 
         assert visited_b1, "Should visit Block 1"
@@ -59,7 +59,7 @@ class TestTSPPlanner:
 
     def test_wall_handling(self):
         """Test that unvisited walls are ignored"""
-        rows, cols = 10, 10
+        rows, cols = 50, 50
         belief_map = np.ones((rows, cols))
 
         # Set walls as unvisited (0)
