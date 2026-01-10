@@ -285,7 +285,7 @@ def setup_grid_map(ox, oy, resolution, sweep_direction, offset_grid=10):
 
     grid_map = GridMap(width, height, resolution, center_x, center_y)
     grid_map.set_value_from_polygon(ox, oy, FloatGrid(1.0), inside=False)
-    grid_map.expand_grid()
+    # grid_map.expand_grid()
 
     x_inds_goal_y = []
     goal_y = 0
@@ -486,16 +486,6 @@ def _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, all_rows, all_cols, 
     for x, y in zip(rx, ry):
         cx = max(0, min(x, all_cols - 1))
         cy = max(0, min(y, all_rows - 1))
-
-        # Filter: only add if point is unvisited in belief_map
-        if belief_map is not None:
-            # Check vicinity or just the point?
-            # Just the point is safest to avoid skipping valid areas,
-            # but might leave small gaps if resolution is coarse.
-            # Given replanning, checking the point is good.
-            if belief_map[int(cy), int(cx)] == 0:
-                path.append((cx, cy))
-        else:
-            path.append((cx, cy))
+        path.append((cx, cy))
 
     return path
