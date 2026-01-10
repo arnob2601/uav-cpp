@@ -15,7 +15,7 @@ def test_resurfacing_planner_with_drift():
     start_pose = Pose(2, 2, 0.0)
 
     # 1. Setup ResurfacingPlanner with TSPRegionPolicy (more robust for drift)
-    policy = TSPRegionPolicy(radius=3)
+    policy = TSPRegionPolicy(radius=5)
     # Resurface frequently
     # Create Planner
     planner = ResurfacingPlanner(

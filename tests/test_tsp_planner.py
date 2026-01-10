@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 
 from uav import planner
 from uav.datatypes import Pose
@@ -14,7 +13,6 @@ class TestTSPPlanner:
         belief_map[3:6, 3:6] = 0
 
         start_pose = Pose(0, 0, 0)
-        
 
         path = planner.plan_coverage_tsp(belief_map, start_pose, radius=1)
 
@@ -37,7 +35,6 @@ class TestTSPPlanner:
         belief_map[15:18, 15:18] = 0
 
         start_pose = Pose(0, 0, 0)
-        
 
         path = planner.plan_coverage_tsp(belief_map, start_pose, radius=1)
 
@@ -67,12 +64,11 @@ class TestTSPPlanner:
 
         # Set walls as unvisited (0)
         belief_map[0, :] = 0
-        belief_map[rows-1, :] = 0
+        belief_map[rows - 1, :] = 0
         belief_map[:, 0] = 0
-        belief_map[:, cols-1] = 0
+        belief_map[:, cols - 1] = 0
 
         start_pose = Pose(5, 5, 0)
-        
 
         path = planner.plan_coverage_tsp(belief_map, start_pose, radius=1)
 

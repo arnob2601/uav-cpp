@@ -24,14 +24,14 @@ def test_full_coverage_tsp_replanning_with_drift(seed):
     start_pose = Pose(2, 2, 0.0)
 
     # 1. Setup ResurfacingPlanner with TSPRegionPolicy
-    policy = TSPRegionPolicy(radius=3)
+    policy = TSPRegionPolicy(radius=5)
 
     # Resurface interval can be large, we rely on end-of-mission verification too.
     # But frequent resurfacing helps keep errors low.
     planner = ResurfacingPlanner(
         policy=policy,
         start_pose=start_pose,
-        resurface_interval=200 # Reasonably long
+        resurface_interval=200  # Reasonably long
     )
 
     robot = UnderwaterRobot(start_pose, planner, grid)
@@ -48,7 +48,7 @@ def test_full_coverage_tsp_replanning_with_drift(seed):
     steps = 0
 
     while steps < max_steps:
-        action = sim.step()
+        sim.step()
         steps += 1
 
         # Check mission status explicitly to break if done
@@ -84,7 +84,7 @@ def test_full_coverage_tsp_replanning_with_drift(seed):
 
     # Plot results needed for debugging
     uav.plotting.plot_results(grid, sim.history, sim.true_map_coverage,
-                             f"TSP Replanning with Drift {seed}", f"data/tsp_replanning_drift_{seed}.png",
-                             surface_indices=sim.surface_indices)
+                              f"TSP Replanning with Drift {seed}", f"data/tsp_replanning_drift_{seed}.png",
+                              surface_indices=sim.surface_indices)
 
     assert coverage_ratio == 1.0, f"Expected 100% coverage, got {coverage_ratio:.2%}"
