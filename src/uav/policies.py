@@ -10,7 +10,6 @@ class PlanningPolicy(ABC):
     Abstract base class for planning policies.
     """
     @abstractmethod
-    @abstractmethod
     def plan(self, current_pose: Pose, belief_map: np.ndarray) -> List[Tuple[float, float]]:
         """
         Generates a list of waypoints (x, y) to cover the remaining area.
