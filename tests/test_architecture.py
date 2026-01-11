@@ -38,7 +38,7 @@ def test_robot_dead_reckoning():
     env = MockEnv(10, 10)
     start_pose = Pose(0, 0, 0)
     policy = MockPolicy([])
-    planner = BlindPlanner(policy, start_pose)  # No plan needed
+    planner = BlindPlanner(policy)  # No plan needed
     robot = UnderwaterRobot(start_pose, planner, env)
 
     # Action: Move 1 unit x
@@ -60,7 +60,7 @@ def test_simulator_drift():
     env = MockEnv(10, 10)
     start_pose = Pose(0, 0, 0)
     policy = MockPolicy([(10.0, 0.0)])  # Target far away
-    planner = BlindPlanner(policy, start_pose)
+    planner = BlindPlanner(policy)
     robot = UnderwaterRobot(start_pose, planner, env)
 
     # Force drift in noise model
@@ -103,7 +103,7 @@ def test_boundary_enforcement():
     # Start at right edge (cols=10, valid indices 0..9)
     start_pose = Pose(9.0, 5.0, 0)
     policy = MockPolicy([])
-    planner = BlindPlanner(policy, start_pose)
+    planner = BlindPlanner(policy)
     robot = UnderwaterRobot(start_pose, planner, env)
 
     # Simple model that just moves as requested (no random drift for this test to be deterministic)

@@ -30,7 +30,6 @@ def test_full_coverage_tsp_replanning_with_drift(seed):
     # But frequent resurfacing helps keep errors low.
     planner = ResurfacingPlanner(
         policy=policy,
-        start_pose=start_pose,
         resurface_interval=200  # Reasonably long
     )
 
