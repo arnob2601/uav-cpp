@@ -25,8 +25,7 @@ def run_simulation_scenario(drift_prob, delta_prob, output_name, title):
     policy = TSPRegionPolicy(radius=5)
     # Using ResurfacingPlanner. It will generate the path on init/first step.
     planner = BlindPlanner(
-        policy=policy,
-        start_pose=start_pose
+        policy=policy
     )
 
     robot = UnderwaterRobot(start_pose, planner, grid)

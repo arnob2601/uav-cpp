@@ -21,6 +21,18 @@ from uav.policies import LawnmowerPolicy # Assuming this exists or we mock it.
 # unless Policy is strictly required. The instructions mentioned "Neural Policy" for deployment.
 # For training data, we just need a policy to follow.
 from uav.planners import BlindPlanner
+from uav.policies import PlanningPolicy
+
+class MockPolicy(PlanningPolicy):
+    def __init__(self, waypoints):
+        self.waypoints = waypoints
+        self.returned = False
+
+    def plan(self, current_pose: Pose, belief_map: np.ndarray):
+        if not self.returned:
+            self.returned = True
+            return self.waypoints
+        return []
 
 def generate_dataset(output_file, num_samples=100):
     print(f"Generating {num_samples} samples...")
@@ -32,7 +44,7 @@ def generate_dataset(output_file, num_samples=100):
     # Plan a lawnmower path
     path_coords = generate_lawnmower_path_coordinates(30, 30, radius=3)
     # Convert to waypoints (simple list of tuples is accepted by BlindPlanner)
-    planner = BlindPlanner(path_coords)
+    planner = BlindPlanner(MockPolicy(path_coords))
 
     robot = UnderwaterRobot(Pose(path_coords[0][0], path_coords[0][1]), planner, env, noise_model)
     sim = CoverageSimulator(env, robot, noise_model)

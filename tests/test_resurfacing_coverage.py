@@ -20,7 +20,6 @@ def test_resurfacing_planner_with_drift():
     # Create Planner
     planner = ResurfacingPlanner(
         policy=policy,
-        start_pose=start_pose,
         resurface_interval=60  # Frequent checking
     )
 

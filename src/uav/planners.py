@@ -8,10 +8,9 @@ class BlindPlanner(BasePlanner):
     Follows a policy-generated path blindly.
     Termination follows when the path is fully traversed.
     """
-    def __init__(self, policy, start_pose):
+    def __init__(self, policy):
         # BasePlanner has no __init__
         self.policy = policy
-        self.start_pose = start_pose
         self.waypoints = []  # Queue of waypoints (x, y)
         self.current_waypoint_idx = 0
         self.arrival_threshold = 1.0
@@ -63,8 +62,8 @@ class ResurfacingPlanner(BlindPlanner):
     """
     Resurfaces every N steps and plans for remaining area.
     """
-    def __init__(self, policy, start_pose, resurface_interval=50):
-        super().__init__(policy, start_pose)
+    def __init__(self, policy, resurface_interval=50):
+        super().__init__(policy)
         self.resurface_interval = resurface_interval
         self.step_counter = 0
         self.state = "NAVIGATING"  # NAVIGATING, RESURFACING

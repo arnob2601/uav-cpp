@@ -38,7 +38,7 @@ def test_blind_planner_full_coverage_no_drift(grid_size, radius):
     # 1. Setup Robot with BlindPlanner and TSP Policy
     # The BlindPlanner will invoke the policy once at start.
     policy = TSPRegionPolicy(radius=radius)
-    planner = BlindPlanner(policy, start_pose)
+    planner = BlindPlanner(policy)
     robot = UnderwaterRobot(start_pose, planner, grid, sensor_radius=radius)
 
     # 2. No Drift
