@@ -85,4 +85,4 @@ def test_blind_planner_full_coverage_no_drift(grid_size, radius):
                               surface_indices=sim.surface_indices)
 
     # TSP Policy should theoretically achieve high coverage
-    assert coverage_ratio > 0.98, f"Expected high coverage, got {coverage_ratio:.2%}"
+    assert coverage_ratio == 1.0, f"Expected high coverage, got {coverage_ratio:.2%}"

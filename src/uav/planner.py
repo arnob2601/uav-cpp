@@ -463,7 +463,7 @@ def _cluster_unvisited(mask, rows, cols):
 
 def _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, all_rows, all_cols, radius, belief_map=None):
     margin = radius
-    padding = radius / 2.0
+    padding = radius * 0.3
     p_min_r = max(padding, min_r - margin)
     p_max_r = min(all_rows - 1 - padding, max_r + margin)
     p_min_c = max(padding, min_c - margin)
@@ -475,7 +475,7 @@ def _generate_lawnmower_for_box(min_r, max_r, min_c, max_c, all_rows, all_cols, 
     ox = [p_min_c, p_max_c, p_max_c, p_min_c, p_min_c]
     oy = [p_min_r, p_min_r, p_max_r, p_max_r, p_min_r]
 
-    resolution = 0.5 * radius
+    resolution = 1.0 * radius
     # Call the main planning function in this module
     try:
         rx, ry = planning(ox, oy, resolution)
