@@ -33,4 +33,11 @@ Run the simulation
 
 
 Run tests:
-`make test`
+```bash
+make test
+```
+
+By default, tests are run in parallel using all available cores. To specify the number of workers, use the `N` argument:
+```bash
+make test N=4
+```

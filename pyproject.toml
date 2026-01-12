@@ -15,6 +15,7 @@ dependencies = [
     "matplotlib",
     "pytest",
     "flake8",
+    "pytest-xdist",
 ]
 
 [tool.uv.sources]
