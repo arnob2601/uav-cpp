@@ -97,6 +97,8 @@ def plot_results(grid, path_history, coverage_grid, title, filename, surface_ind
         path_len = np.sum(dists)
 
     ax.set_title(f"{title}\nCoverage: {scanned_count}/{valid_cells_count} ({coverage_pct:.2f}%) | Cost: {path_len:.2f}")
+    ax.set_xlabel('Grid cell units')
+    ax.set_ylabel('Grid cell units')
 
     # Handle duplicate labels in legend
     handles, labels = plt.gca().get_legend_handles_labels()
