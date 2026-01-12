@@ -1,11 +1,12 @@
 PYTEST_FILTER ?= test
+N ?= auto
 
 .PHONY: help
 help: ## Show this help message
-	@echo "Usage: make [target]"
+	@echo "Usage: make [target] [N=num_workers]"
 	@echo "Targets:"
 	@echo "  help		Show this help message"
-	@echo "  test		Runs tests (limit scope via PYTEST_FILTER=filter)"
+	@echo "  test		Runs tests (limit scope via PYTEST_FILTER=filter, parallel via N=workers)"
 	@echo "  clean	Clean build artifacts and virtual environment"
 
 
@@ -15,7 +16,7 @@ setup_dirs:
 
 .PHONY: test clean
 test: setup_dirs ## Runs tests (limit scope via PYTEST_FILTER=filter)
-	@uv run pytest -vk $(PYTEST_FILTER)
+	@uv run pytest -n $(N) -vk $(PYTEST_FILTER)
 
 clean: ## Clean build artifacts and virtual environment
 ifeq ($(OS),Windows_NT)
